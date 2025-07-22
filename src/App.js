@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // Force refresh
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -11,21 +11,42 @@ import './App.css';
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
   };
 
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarExpanded(false); // Auto-collapse sidebar on mobile
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Check on mount
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="app">
       <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
-      <div className={`main-content ${sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
+      <div className={`main-content scroll-container ${
+        isMobile ? '' : (sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
+      }`}>
         <Header onSidebarToggle={toggleSidebar} />
-        <Hero />
-        <Categories />
-        <ProductGrid />
-        <Blog />
-        <Footer />
+        <div className="content-wrapper">
+          <Hero />
+          <Categories />
+          <ProductGrid />
+          <Blog />
+          <Footer />
+        </div>
       </div>
     </div>
   );

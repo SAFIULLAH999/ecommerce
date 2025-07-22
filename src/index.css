@@ -5,6 +5,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS-style momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Prevent zoom on input focus on mobile */
+  -webkit-text-size-adjust: 100%;
 }
 
 code {
