@@ -37,7 +37,7 @@ const Categories = () => {
 
   return (
     <section className="categories">
-      <div className="categories-container">
+      <div className="categories-container stagger-animation">
         {categories.map((category) => (
           <div key={category.id} className="category-card">
             <div className="category-image">

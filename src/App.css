@@ -12,17 +12,46 @@
   min-height: 100vh;
   width: 100%;
   position: relative;
+  padding-top: 20px;
 }
 
 .main-content.sidebar-expanded {
-  padding-left: 290px;
+  padding-left: 320px;
 }
 
 .main-content.sidebar-collapsed {
-  padding-left: 80px;
+  padding-left: 110px;
+}
+
+@media (max-width: 1024px) {
+  .main-content.sidebar-expanded {
+    padding-left: 300px;
+  }
+
+  .main-content.sidebar-collapsed {
+    padding-left: 90px;
+  }
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    padding-top: 10px;
+  }
+
+  .main-content.sidebar-expanded {
+    padding-left: 280px;
+  }
+
+  .main-content.sidebar-collapsed {
+    padding-left: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 5px;
+  }
+
   .main-content.sidebar-expanded {
     padding-left: 270px;
   }
@@ -226,23 +255,7 @@ p {
   }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
+/* Scrollbar styling - now enhanced below */
 
 /* Focus styles for accessibility */
 button:focus,
@@ -288,4 +301,176 @@ textarea:focus {
 
 .slide-up {
   animation: slideUp 0.4s ease-out;
+}
+
+/* Page transition animations */
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-transition {
+  animation: pageSlideIn 0.5s ease-out;
+}
+
+/* Smooth hover lift */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth scale animation */
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Glow effect */
+.glow {
+  transition: all 0.3s ease;
+}
+
+.glow:hover {
+  box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+}
+
+/* Micro-interactions for buttons */
+.btn-micro {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-micro::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-micro:active::before {
+  width: 200px;
+  height: 200px;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced focus styles */
+*:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Stagger animation for lists */
+.stagger-animation > * {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: staggerFadeIn 0.5s ease forwards;
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes staggerFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c1c1c1, #a8a8a8);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a8a8a8, #8a8a8a);
+}
+
+/* Enhanced button interactions */
+.btn-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  will-change: transform;
+}
+
+.btn-enhanced:hover {
+  transform: translateY(-2px);
+}
+
+.btn-enhanced:active {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
 }

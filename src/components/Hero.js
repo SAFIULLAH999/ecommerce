@@ -55,9 +55,9 @@ const Hero = () => {
 
   const currentSlideData = slides[currentSlide];
   return (
-    <section className="hero">
+    <section className="hero page-transition">
       <div className="hero-container">
-        <div className="hero-content">
+        <div className="hero-content stagger-animation">
           <div className="hero-text">
             <div className="sale-badge">
               <span className="sale-text">Sale!</span>
@@ -69,7 +69,7 @@ const Hero = () => {
             <p className="hero-subtitle">
               {currentSlideData.subtitle}
             </p>
-            <button className="shop-now-btn">Shop Now</button>
+            <button className="shop-now-btn btn-enhanced btn-micro">Shop Now</button>
           </div>
 
           <div className="hero-image">

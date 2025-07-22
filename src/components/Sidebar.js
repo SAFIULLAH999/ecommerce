@@ -1,7 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Sidebar.css';
 
 const Sidebar = ({ isExpanded, onToggle }) => {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setMobileOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToggle = () => {
+    if (isMobile) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      onToggle();
+    }
+  };
+
+  const handleOverlayClick = () => {
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  };
   const menuItems = [
     { icon: '📊', label: 'Dashboard', active: false },
     { icon: '📱', label: 'eCommerce', active: true },
@@ -22,16 +51,24 @@ const Sidebar = ({ isExpanded, onToggle }) => {
   ];
 
   return (
-    <div className={`sidebar ${isExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
+    <>
+      {isMobile && mobileOpen && (
+        <div className="sidebar-overlay show" onClick={handleOverlayClick}></div>
+      )}
+      <div className={`sidebar ${
+        isMobile ?
+          (mobileOpen ? 'sidebar-expanded mobile-open' : 'sidebar-collapsed') :
+          (isExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
+      }`}>
       <div className="sidebar-header">
-        {isExpanded && (
+        {(isMobile ? mobileOpen : isExpanded) && (
           <div className="sidebar-logo">
             <span className="crown-icon">👑</span>
             <span className="brand-name">Mantu</span>
           </div>
         )}
-        <button className="sidebar-toggle-btn" onClick={onToggle}>
-          {isExpanded ? '‹' : '›'}
+        <button className="sidebar-toggle-btn" onClick={handleToggle}>
+          {(isMobile ? mobileOpen : isExpanded) ? '‹' : '›'}
         </button>
       </div>
 
@@ -43,12 +80,12 @@ const Sidebar = ({ isExpanded, onToggle }) => {
             title={!isExpanded ? item.label : ''}
           >
             <span className="sidebar-icon">{item.icon}</span>
-            {isExpanded && <span className="sidebar-label">{item.label}</span>}
+            {(isMobile ? mobileOpen : isExpanded) && <span className="sidebar-label">{item.label}</span>}
           </div>
         ))}
       </nav>
 
-      {isExpanded && (
+      {(isMobile ? mobileOpen : isExpanded) && (
         <div className="sidebar-footer">
           <div className="user-profile">
             <div className="user-avatar">JD</div>
@@ -59,7 +96,8 @@ const Sidebar = ({ isExpanded, onToggle }) => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
