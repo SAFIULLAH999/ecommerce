@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import WishlistDrawer from './components/WishlistDrawer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -13,6 +14,11 @@ import Categories from './pages/Categories';
 import Blogs from './pages/Blogs';
 import Messages from './pages/Messages';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Users from './pages/Users';
+import Analytics from './pages/Analytics';
+import './styles/animations.css';
 import './App.css';
 
 function App() {
@@ -57,12 +63,17 @@ function App() {
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/blogs" element={<Blogs />} />
                 <Route path="/messages" element={<Messages />} />
-                <Route path="/settings" element={<Settings />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/analytics" element={<Analytics />} />
               </Routes>
               <Footer />
           </div>
           <CartDrawer />
           <WishlistDrawer />
+          <ScrollToTop />
         </div>
       </div>
     </Router>

@@ -34,13 +34,27 @@ const Header = ({ onSidebarToggle }) => {
         </button>
 
         <div className="header-right">
-          <div className="search-icon" title="Search">🔍</div>
-          <div className="wishlist-icon" title="Wishlist" onClick={toggleWishlistDrawer}>🤍</div>
-          <div className="cart-icon" title="Shopping Cart" onClick={toggleCartDrawer}>
-            🛒
-            {getCartItemsCount() > 0 && (
-              <span className="cart-count">{getCartItemsCount()}</span>
-            )}
+          <div className="header-icons">
+            <div className="search-icon" title="Search">🔍</div>
+            <div className="wishlist-icon" title="Wishlist" onClick={toggleWishlistDrawer}>🤍</div>
+            <div className="cart-icon" title="Shopping Cart" onClick={toggleCartDrawer}>
+              🛒
+              {getCartItemsCount() > 0 && (
+                <span className="cart-count">{getCartItemsCount()}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="auth-buttons">
+            <Link to="/login" className="login-btn ultra-smooth hover-lift">
+              Sign In
+            </Link>
+            <Link to="/signup" className="signup-btn ultra-smooth hover-lift button-smooth">
+              <span>Sign Up</span>
+              <svg className="btn-arrow" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
           </div>
         </div>
       </div>

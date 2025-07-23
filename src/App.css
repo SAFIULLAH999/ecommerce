@@ -1,5 +1,10 @@
 * {
   box-sizing: border-box;
+  /* GPU acceleration for ultra-smooth animations */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app {
@@ -8,15 +13,19 @@
 }
 
 .main-content {
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 100vh;
   width: 100%;
   position: relative;
   padding-top: 20px;
   overflow-x: hidden;
-  /* iOS-like smooth scrolling */
+  /* Ultra-smooth iOS-like scrolling */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .main-content.sidebar-expanded {
@@ -329,23 +338,25 @@ textarea:focus {
   animation: pageSlideIn 0.5s ease-out;
 }
 
-/* Smooth hover lift */
+/* Ultra-smooth hover lift */
 .hover-lift {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
-/* Smooth scale animation */
+/* Ultra-smooth scale animation */
 .hover-scale {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .hover-scale:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* Pulse animation */
@@ -488,21 +499,38 @@ html {
   background: linear-gradient(180deg, #a8a8a8, #8a8a8a);
 }
 
-/* Enhanced button interactions */
+/* Ultra-enhanced button interactions */
 .btn-enhanced {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+  transform: translateZ(0);
+}
+
+.btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-enhanced:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn-enhanced:hover::before {
+  left: 100%;
 }
 
 .btn-enhanced:active {
-  transform: translateY(0);
-  transition: transform 0.1s ease;
+  transform: translateY(-1px) scale(0.98);
+  transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 /* Mobile-specific improvements and iOS-style scrolling */
@@ -575,9 +603,11 @@ html, body {
   overscroll-behavior: contain;
 }
 
-/* Smooth transitions for all interactive elements */
+/* Ultra-smooth transitions for all interactive elements */
 button, .nav-link, .sidebar-item, .cart-icon, .search-icon, .wishlist-icon {
-  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Enhanced mobile scroll container */

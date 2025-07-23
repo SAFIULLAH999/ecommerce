@@ -84,6 +84,70 @@
   gap: 20px;
 }
 
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-btn,
+.signup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.login-btn {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.signup-btn {
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.signup-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.signup-btn .btn-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.signup-btn:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
 .search-icon,
 .wishlist-icon,
 .cart-icon {
@@ -208,6 +272,10 @@
     gap: 8px;
   }
 
+  .header-icons {
+    gap: 8px;
+  }
+
   .search-icon,
   .wishlist-icon,
   .cart-icon {
@@ -218,6 +286,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .auth-buttons {
+    margin-left: 10px;
+    padding-left: 10px;
+    gap: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .login-btn,
+  .signup-btn {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    min-height: 44px;
+  }
+
+  .signup-btn .btn-arrow {
+    width: 14px;
+    height: 14px;
   }
 
   .mobile-nav {
@@ -246,6 +333,10 @@
     gap: 5px;
   }
 
+  .header-icons {
+    gap: 5px;
+  }
+
   .search-icon,
   .wishlist-icon,
   .cart-icon {
@@ -253,6 +344,31 @@
     font-size: 16px;
     min-height: 40px;
     min-width: 40px;
+  }
+
+  .auth-buttons {
+    margin-left: 8px;
+    padding-left: 8px;
+    gap: 6px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .login-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    min-height: 40px;
+  }
+
+  .signup-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    min-height: 40px;
+    gap: 4px;
+  }
+
+  .signup-btn .btn-arrow {
+    width: 12px;
+    height: 12px;
   }
 
   .mobile-menu-toggle {
