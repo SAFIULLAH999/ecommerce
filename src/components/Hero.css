@@ -2,7 +2,7 @@
 
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -67,9 +67,9 @@
 .hero-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 80px;
+  gap: 60px;
   align-items: center;
-  min-height: calc(100vh - 140px);
+  min-height: calc(60vh - 100px);
 }
 
 .hero-text {
@@ -225,7 +225,7 @@
 
 .hero-image-container {
   position: relative;
-  height: 600px;
+  height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,9 +233,9 @@
 
 .image-frame {
   position: relative;
-  width: 400px;
-  height: 500px;
-  border-radius: 30px;
+  width: 300px;
+  height: 350px;
+  border-radius: 20px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);

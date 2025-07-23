@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import animationManager from './utils/animationManager';
+import autoAnimations from './utils/autoAnimations';
 import { AppProvider } from './context/AppContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -42,6 +44,26 @@ function App() {
     window.addEventListener('resize', handleResize);
     handleResize(); // Check on mount
 
+    // Initialize animations
+    setTimeout(() => {
+      const appElement = document.querySelector('.app');
+      const contentWrapper = document.querySelector('.content-wrapper');
+
+      if (appElement) {
+        appElement.style.opacity = '1';
+        appElement.style.transform = 'translateY(0)';
+      }
+
+      if (contentWrapper) {
+        contentWrapper.style.opacity = '1';
+        contentWrapper.style.transform = 'translateY(0)';
+      }
+
+      // Ensure animations are initialized
+      animationManager.init();
+      autoAnimations.init();
+    }, 100);
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -63,20 +85,20 @@ function App() {
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/blogs" element={<Blogs />} />
                 <Route path="/messages" element={<Messages />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/analytics" element={<Analytics />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/analytics" element={<Analytics />} />
               </Routes>
               <Footer />
+            </div>
+            <CartDrawer />
+            <WishlistDrawer />
+            <ScrollToTop />
           </div>
-          <CartDrawer />
-          <WishlistDrawer />
-          <ScrollToTop />
         </div>
-      </div>
-    </Router>
+      </Router>
     </AppProvider>
   );
 }
