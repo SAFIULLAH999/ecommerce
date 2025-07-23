@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 
 const Sidebar = ({ isExpanded, onToggle }) => {
@@ -31,23 +32,25 @@ const Sidebar = ({ isExpanded, onToggle }) => {
       setMobileOpen(false);
     }
   };
+  const location = useLocation();
+
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', active: false },
-    { icon: '📱', label: 'eCommerce', active: true },
-    { icon: '📝', label: 'Blogs', active: false },
-    { icon: '🛍️', label: 'Shops', active: false },
-    { icon: '📧', label: 'Messages', active: false },
-    { icon: '⚙️', label: 'Settings', active: false },
-    { icon: '🛒', label: 'Commerce', active: false },
-    { icon: '👤', label: 'Users', active: false },
-    { icon: '📈', label: 'Gifts', active: false },
-    { icon: '🎵', label: 'Music', active: false },
-    { icon: '📺', label: 'Videos', active: false },
-    { icon: '🎨', label: 'Tutorial Point', active: false },
-    { icon: '📱', label: 'eCommerce', active: false },
-    { icon: '🎶', label: 'Marketplace', active: false },
-    { icon: '🍰', label: 'Culinary', active: false },
-    { icon: '📑', label: 'UI Pages', active: false }
+    { icon: '📊', label: 'Dashboard', path: '/dashboard' },
+    { icon: '🏠', label: 'Home', path: '/home' },
+    { icon: '📦', label: 'Products', path: '/products' },
+    { icon: '📋', label: 'Categories', path: '/categories' },
+    { icon: '📝', label: 'Blogs', path: '/blogs' },
+    { icon: '📧', label: 'Messages', path: '/messages' },
+    { icon: '⚙️', label: 'Settings', path: '/settings' },
+    { icon: '🛒', label: 'Commerce', path: '#' },
+    { icon: '👤', label: 'Users', path: '#' },
+    { icon: '📈', label: 'Analytics', path: '#' },
+    { icon: '🎵', label: 'Music', path: '#' },
+    { icon: '📺', label: 'Videos', path: '#' },
+    { icon: '🎨', label: 'Design', path: '#' },
+    { icon: '🎶', label: 'Marketplace', path: '#' },
+    { icon: '🍰', label: 'Culinary', path: '#' },
+    { icon: '📑', label: 'Pages', path: '#' }
   ];
 
   return (
@@ -73,16 +76,23 @@ const Sidebar = ({ isExpanded, onToggle }) => {
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item, index) => (
-          <div
-            key={index}
-            className={`sidebar-item ${item.active ? 'active' : ''}`}
-            title={!isExpanded ? item.label : ''}
-          >
-            <span className="sidebar-icon">{item.icon}</span>
-            {(isMobile ? mobileOpen : isExpanded) && <span className="sidebar-label">{item.label}</span>}
-          </div>
-        ))}
+        {menuItems.map((item, index) => {
+          const isActive = location.pathname === item.path;
+          const ItemWrapper = item.path !== '#' ? Link : 'div';
+          const itemProps = item.path !== '#' ? { to: item.path } : {};
+
+          return (
+            <ItemWrapper
+              key={index}
+              {...itemProps}
+              className={`sidebar-item ${isActive ? 'active' : ''} ${item.path === '#' ? 'disabled' : ''}`}
+              title={!isExpanded ? item.label : ''}
+            >
+              <span className="sidebar-icon">{item.icon}</span>
+              {(isMobile ? mobileOpen : isExpanded) && <span className="sidebar-label">{item.label}</span>}
+            </ItemWrapper>
+          );
+        })}
       </nav>
 
       {(isMobile ? mobileOpen : isExpanded) && (

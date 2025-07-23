@@ -141,6 +141,15 @@
   box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
 }
 
+.action-btn.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.action-btn.active:hover {
+  background: #c0392b;
+}
+
 .product-info {
   padding: 20px;
 }

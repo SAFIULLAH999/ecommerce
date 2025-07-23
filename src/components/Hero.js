@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
+
+  const handleShopNow = () => {
+    navigate('/products');
+  };
 
   const slides = [
     {
@@ -69,7 +75,7 @@ const Hero = () => {
             <p className="hero-subtitle">
               {currentSlideData.subtitle}
             </p>
-            <button className="shop-now-btn btn-enhanced btn-micro">Shop Now</button>
+            <button className="shop-now-btn btn-enhanced btn-micro" onClick={handleShopNow}>Shop Now</button>
           </div>
 
           <div className="hero-image">

@@ -1,7 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import './ProductGrid.css';
 
 const ProductGrid = () => {
+  const navigate = useNavigate();
+  const { addToCart, addToWishlist, isInWishlist } = useApp();
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    // Show a brief notification or feedback
+    console.log('Added to cart:', product.name);
+  };
+
+  const handleAddToWishlist = (product) => {
+    addToWishlist(product);
+    console.log('Added to wishlist:', product.name);
+  };
+
+  const handleViewAll = () => {
+    navigate('/products');
+  };
   const products = [
     {
       id: 1,
@@ -78,7 +97,7 @@ const ProductGrid = () => {
       <div className="product-container">
         <div className="section-header">
           <h2 className="section-title">New Arrivals</h2>
-          <button className="view-all-btn">View All →</button>
+          <button className="view-all-btn" onClick={handleViewAll}>View All →</button>
         </div>
         
         <div className="product-grid">
@@ -91,9 +110,21 @@ const ProductGrid = () => {
               <div className="product-image">
                 <img src={product.image} alt={product.name} />
                 <div className="product-actions">
-                  <button className="action-btn">🤍</button>
-                  <button className="action-btn">👁️</button>
-                  <button className="action-btn">🛒</button>
+                  <button
+                    className={`action-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                    onClick={() => handleAddToWishlist(product)}
+                    title="Add to Wishlist"
+                  >
+                    {isInWishlist(product.id) ? '❤️' : '🤍'}
+                  </button>
+                  <button className="action-btn" title="Quick View">👁️</button>
+                  <button
+                    className="action-btn"
+                    onClick={() => handleAddToCart(product)}
+                    title="Add to Cart"
+                  >
+                    🛒
+                  </button>
                 </div>
               </div>
               

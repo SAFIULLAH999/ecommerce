@@ -72,6 +72,12 @@
   transform: translateY(-2px);
 }
 
+.nav-link.active {
+  color: #007bff;
+  background: rgba(0, 123, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
 .header-right {
   display: flex;
   align-items: center;

@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-// Force refresh
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import Hero from './components/Hero';
-import Categories from './components/Categories';
-import ProductGrid from './components/ProductGrid';
-import Blog from './components/Blog';
 import Footer from './components/Footer';
+import CartDrawer from './components/CartDrawer';
+import WishlistDrawer from './components/WishlistDrawer';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+import Categories from './pages/Categories';
+import Blogs from './pages/Blogs';
+import Messages from './pages/Messages';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
@@ -34,21 +40,33 @@ function App() {
   }, []);
 
   return (
-    <div className="app">
-      <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
-      <div className={`main-content scroll-container ${
-        isMobile ? '' : (sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
-      }`}>
-        <Header onSidebarToggle={toggleSidebar} />
-        <div className="content-wrapper">
-          <Hero />
-          <Categories />
-          <ProductGrid />
-          <Blog />
-          <Footer />
+    <AppProvider>
+      <Router>
+        <div className="app">
+          <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
+          <div className={`main-content scroll-container ${
+            isMobile ? '' : (sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
+          }`}>
+            <Header onSidebarToggle={toggleSidebar} />
+            <div className="content-wrapper">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/blogs" element={<Blogs />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/settings" element={<Settings />} />
+              </Routes>
+              <Footer />
+          </div>
+          <CartDrawer />
+          <WishlistDrawer />
         </div>
       </div>
-    </div>
+    </Router>
+    </AppProvider>
   );
 }
 
