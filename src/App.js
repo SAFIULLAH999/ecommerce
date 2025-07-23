@@ -44,6 +44,10 @@ function App() {
     window.addEventListener('resize', handleResize);
     handleResize(); // Check on mount
 
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     // Initialize animations
     setTimeout(() => {
       const appElement = document.querySelector('.app');

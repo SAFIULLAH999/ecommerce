@@ -15,6 +15,10 @@ export const AppProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || 'light';
+  });
 
   // Cart functions
   const addToCart = (product) => {
@@ -91,6 +95,14 @@ export const AppProvider = ({ children }) => {
     if (isCartOpen) setIsCartOpen(false);
   };
 
+  // Theme functions
+  const toggleTheme = (newTheme) => {
+    const themeToSet = newTheme || (theme === 'light' ? 'dark' : 'light');
+    setTheme(themeToSet);
+    localStorage.setItem('theme', themeToSet);
+    document.documentElement.setAttribute('data-theme', themeToSet);
+  };
+
   const value = {
     // Cart state and functions
     cart,
@@ -110,6 +122,10 @@ export const AppProvider = ({ children }) => {
     isInWishlist,
     isWishlistOpen,
     toggleWishlistDrawer,
+
+    // Theme state and functions
+    theme,
+    toggleTheme,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
