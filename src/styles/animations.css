@@ -8,6 +8,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Ensure all interactive elements are clickable */
+button, [onClick], .clickable, a {
+  pointer-events: auto !important;
+  user-select: none;
+  position: relative;
+  z-index: 1;
+}
+
 /* Ultra-smooth transitions */
 .ultra-smooth {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);

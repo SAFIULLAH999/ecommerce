@@ -20,6 +20,9 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Users from './pages/Users';
 import Analytics from './pages/Analytics';
+import Commerce from './pages/Commerce';
+import Music from './pages/Music';
+import Videos from './pages/Videos';
 import './styles/animations.css';
 import './App.css';
 
@@ -28,6 +31,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const toggleSidebar = () => {
+    console.log('toggleSidebar called, current state:', sidebarExpanded);
     setSidebarExpanded(!sidebarExpanded);
   };
 
@@ -94,6 +98,13 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/commerce" element={<Commerce />} />
+                <Route path="/music" element={<Music />} />
+                <Route path="/videos" element={<Videos />} />
+                <Route path="/design" element={<div className="page-placeholder">🎨 Design Studio Coming Soon</div>} />
+                <Route path="/marketplace" element={<div className="page-placeholder">🏪 Marketplace Coming Soon</div>} />
+                <Route path="/culinary" element={<div className="page-placeholder">🍰 Culinary Section Coming Soon</div>} />
+                <Route path="/pages" element={<div className="page-placeholder">📑 Pages Manager Coming Soon</div>} />
               </Routes>
               <Footer />
             </div>

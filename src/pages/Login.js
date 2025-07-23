@@ -39,12 +39,50 @@ const Login = () => {
     }, 2000);
   };
 
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked');
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      // Simulate Google OAuth flow
+      console.log('Initiating Google login...');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Simulate successful login
+      const googleUser = {
+        email: 'user@gmail.com',
+        name: 'Google User',
+        provider: 'google'
+      };
+
+      console.log('Google login successful:', googleUser);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google login failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFacebookLogin = () => {
-    console.log('Facebook login clicked');
+  const handleFacebookLogin = async () => {
+    setIsLoading(true);
+    try {
+      // Simulate Facebook OAuth flow
+      console.log('Initiating Facebook login...');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Simulate successful login
+      const facebookUser = {
+        email: 'user@facebook.com',
+        name: 'Facebook User',
+        provider: 'facebook'
+      };
+
+      console.log('Facebook login successful:', facebookUser);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Facebook login failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -10,8 +10,18 @@ const Hero = () => {
   const navigate = useNavigate();
   const heroRef = useRef(null);
 
-  const handleShopNow = () => {
-    navigate('/products');
+  const handleShopNow = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Shop Now button clicked!');
+    try {
+      navigate('/products');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.href = '/products';
+    }
   };
 
   useEffect(() => {
@@ -56,21 +66,36 @@ const Hero = () => {
     }
   ];
 
-  const nextSlide = () => {
+  const nextSlide = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Next slide clicked!');
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentSlide((prev) => (prev + 1) % slides.length);
     setTimeout(() => setIsTransitioning(false), 600);
   };
 
-  const prevSlide = () => {
+  const prevSlide = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Previous slide clicked!');
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     setTimeout(() => setIsTransitioning(false), 600);
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index) => (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Slide indicator clicked:', index);
     if (isTransitioning || index === currentSlide) return;
     setIsTransitioning(true);
     setCurrentSlide(index);
@@ -115,9 +140,16 @@ const Hero = () => {
               {currentSlideData.subtitle}
             </p>
             
-            <button 
-              className="shop-now-btn button-smooth hover-lift ripple ultra-smooth" 
+            <button
+              className="shop-now-btn"
               onClick={handleShopNow}
+              type="button"
+              style={{
+                position: 'relative',
+                zIndex: 1000,
+                pointerEvents: 'auto',
+                cursor: 'pointer'
+              }}
             >
               <span className="btn-text">Shop Now</span>
               <div className="btn-glow"></div>
@@ -152,19 +184,23 @@ const Hero = () => {
         </div>
 
         <div className="hero-navigation">
-          <button 
-            className={`nav-arrow nav-prev button-smooth hover-scale ${isTransitioning ? 'disabled' : ''}`} 
+          <button
+            className={`nav-arrow nav-prev ${isTransitioning ? 'disabled' : ''}`}
             onClick={prevSlide}
             disabled={isTransitioning}
+            type="button"
+            style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
           >
             <svg viewBox="0 0 24 24">
               <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <button 
-            className={`nav-arrow nav-next button-smooth hover-scale ${isTransitioning ? 'disabled' : ''}`} 
+          <button
+            className={`nav-arrow nav-next ${isTransitioning ? 'disabled' : ''}`}
             onClick={nextSlide}
             disabled={isTransitioning}
+            type="button"
+            style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
           >
             <svg viewBox="0 0 24 24">
               <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -176,11 +212,13 @@ const Hero = () => {
           {slides.map((_, index) => (
             <button
               key={index}
-              className={`indicator ultra-smooth hover-scale ${
+              className={`indicator ${
                 index === currentSlide ? 'active' : ''
               } ${isTransitioning ? 'disabled' : ''}`}
-              onClick={() => goToSlide(index)}
+              onClick={goToSlide(index)}
               disabled={isTransitioning}
+              type="button"
+              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
               aria-label={`Go to slide ${index + 1}`}
             >
               <div className="indicator-fill"></div>

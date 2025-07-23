@@ -8,8 +8,40 @@ const Header = ({ onSidebarToggle }) => {
   const location = useLocation();
   const { getCartItemsCount, toggleCartDrawer, toggleWishlistDrawer } = useApp();
 
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Mobile menu toggle clicked!');
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleSearchClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Search clicked!');
+    // Add search functionality here
+  };
+
+  const handleWishlistClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Wishlist clicked!');
+    toggleWishlistDrawer();
+  };
+
+  const handleCartClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Cart clicked!');
+    toggleCartDrawer();
   };
 
   return (
@@ -29,15 +61,35 @@ const Header = ({ onSidebarToggle }) => {
           <Link to="/blogs" className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`}>Pages</Link>
         </nav>
 
-        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+        <button
+          className="mobile-menu-toggle"
+          onClick={toggleMobileMenu}
+          type="button"
+          style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
+        >
           {mobileMenuOpen ? '✕' : '☰'}
         </button>
 
         <div className="header-right">
           <div className="header-icons">
-            <div className="search-icon" title="Search">🔍</div>
-            <div className="wishlist-icon" title="Wishlist" onClick={toggleWishlistDrawer}>🤍</div>
-            <div className="cart-icon" title="Shopping Cart" onClick={toggleCartDrawer}>
+            <div
+              className="search-icon"
+              title="Search"
+              onClick={handleSearchClick}
+              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
+            >🔍</div>
+            <div
+              className="wishlist-icon"
+              title="Wishlist"
+              onClick={handleWishlistClick}
+              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
+            >🤍</div>
+            <div
+              className="cart-icon"
+              title="Shopping Cart"
+              onClick={handleCartClick}
+              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
+            >
               🛒
               {getCartItemsCount() > 0 && (
                 <span className="cart-count">{getCartItemsCount()}</span>

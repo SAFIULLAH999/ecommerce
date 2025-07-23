@@ -19,7 +19,12 @@ const Sidebar = ({ isExpanded, onToggle }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleToggle = () => {
+  const handleToggle = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log('Sidebar toggle clicked!', { isMobile, mobileOpen });
     if (isMobile) {
       setMobileOpen(!mobileOpen);
     } else {
@@ -27,7 +32,11 @@ const Sidebar = ({ isExpanded, onToggle }) => {
     }
   };
 
-  const handleOverlayClick = () => {
+  const handleOverlayClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (isMobile) {
       setMobileOpen(false);
     }
@@ -35,22 +44,22 @@ const Sidebar = ({ isExpanded, onToggle }) => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', path: '/dashboard' },
-    { icon: '🏠', label: 'Home', path: '/home' },
-    { icon: '📦', label: 'Products', path: '/products' },
-    { icon: '📋', label: 'Categories', path: '/categories' },
-    { icon: '📝', label: 'Blogs', path: '/blogs' },
-    { icon: '📧', label: 'Messages', path: '/messages' },
-    { icon: '⚙️', label: 'Settings', path: '/settings' },
-    { icon: '🛒', label: 'Commerce', path: '#' },
-    { icon: '👤', label: 'Users', path: '#' },
-    { icon: '📈', label: 'Analytics', path: '#' },
-    { icon: '🎵', label: 'Music', path: '#' },
-    { icon: '📺', label: 'Videos', path: '#' },
-    { icon: '🎨', label: 'Design', path: '#' },
-    { icon: '🎶', label: 'Marketplace', path: '#' },
-    { icon: '🍰', label: 'Culinary', path: '#' },
-    { icon: '📑', label: 'Pages', path: '#' }
+    { icon: '📊', label: 'Dashboard', path: '/dashboard', category: 'admin' },
+    { icon: '🏠', label: 'Home', path: '/home', category: 'main' },
+    { icon: '📦', label: 'Products', path: '/products', category: 'main' },
+    { icon: '📋', label: 'Categories', path: '/categories', category: 'main' },
+    { icon: '📝', label: 'Blogs', path: '/blogs', category: 'content' },
+    { icon: '📧', label: 'Messages', path: '/messages', category: 'communication' },
+    { icon: '⚙️', label: 'Settings', path: '/settings', category: 'admin' },
+    { icon: '🛒', label: 'Commerce', path: '/commerce', category: 'business' },
+    { icon: '👤', label: 'Users', path: '/users', category: 'admin' },
+    { icon: '📈', label: 'Analytics', path: '/analytics', category: 'business' },
+    { icon: '🎵', label: 'Music', path: '/music', category: 'media' },
+    { icon: '📺', label: 'Videos', path: '/videos', category: 'media' },
+    { icon: '🎨', label: 'Design', path: '/design', category: 'creative' },
+    { icon: '🏪', label: 'Marketplace', path: '/marketplace', category: 'business' },
+    { icon: '🍰', label: 'Culinary', path: '/culinary', category: 'lifestyle' },
+    { icon: '📑', label: 'Pages', path: '/pages', category: 'content' }
   ];
 
   return (
@@ -70,7 +79,12 @@ const Sidebar = ({ isExpanded, onToggle }) => {
             <span className="brand-name">Mantu</span>
           </div>
         )}
-        <button className="sidebar-toggle-btn" onClick={handleToggle}>
+        <button
+          className="sidebar-toggle-btn"
+          onClick={handleToggle}
+          type="button"
+          style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
+        >
           {(isMobile ? mobileOpen : isExpanded) ? '‹' : '›'}
         </button>
       </div>
@@ -78,19 +92,17 @@ const Sidebar = ({ isExpanded, onToggle }) => {
       <nav className="sidebar-nav">
         {menuItems.map((item, index) => {
           const isActive = location.pathname === item.path;
-          const ItemWrapper = item.path !== '#' ? Link : 'div';
-          const itemProps = item.path !== '#' ? { to: item.path } : {};
 
           return (
-            <ItemWrapper
+            <Link
               key={index}
-              {...itemProps}
-              className={`sidebar-item ${isActive ? 'active' : ''} ${item.path === '#' ? 'disabled' : ''}`}
-              title={!isExpanded ? item.label : ''}
+              to={item.path}
+              className={`sidebar-item ${isActive ? 'active' : ''} ${item.category}`}
+              title={!(isMobile ? mobileOpen : isExpanded) ? item.label : ''}
             >
               <span className="sidebar-icon">{item.icon}</span>
               {(isMobile ? mobileOpen : isExpanded) && <span className="sidebar-label">{item.label}</span>}
-            </ItemWrapper>
+            </Link>
           );
         })}
       </nav>
