@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Lead management models
+model Lead {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  firstName   String?
+  lastName    String?
+  phone       String?
+  company     String?
+  jobTitle    String?
+  website     String?
+  
+  // Lead source and campaign tracking
+  source      LeadSource @default(ORGANIC)
+  campaign    String?
+  referrer    String?
+  utmSource   String?   @map("utm_source")
+  utmMedium   String?   @map("utm_medium")
+  utmCampaign String?   @map("utm_campaign")
+  
+  // Lead status and scoring
+  status      LeadStatus @default(NEW)
+  score       Int?      @default(0)
+  temperature LeadTemperature @default(COLD)
+  
+  // Lead qualification
+  budget      Decimal?  @db.Decimal(10, 2)
+  timeline    String?
+  decisionMaker Boolean @default(false)
+  
+  // Product interest
+  interests   ProductInterest[]
+  
+  // Communication tracking
+  notes       Note[]
+  activities  Activity[]
+  
+  // Marketing preferences
+  newsletter  Boolean   @default(false)
+  smsOptIn    Boolean   @default(false) @map("sms_opt_in")
+  
+  // Metadata
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  convertedAt DateTime? @map("converted_at")
+  
+  // Relationships
+  assignedTo  User?     @relation(fields: [assignedToId], references: [id])
+  assignedToId String?  @map("assigned_to_id")
+  
+  @@map("leads")
+}
+
+model ProductInterest {
+  id        String @id @default(cuid())
+  leadId    String @map("lead_id")
+  productId String @map("product_id")
+  interest  InterestLevel @default(MEDIUM)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  @@unique([leadId, productId])
+  @@map("product_interests")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String
+  leadId    String   @map("lead_id")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author    User @relation(fields: [authorId], references: [id])
+  
+  @@map("notes")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  leadId      String       @map("lead_id")
+  performedBy String       @map("performed_by")
+  scheduledAt DateTime?    @map("scheduled_at")
+  completedAt DateTime?    @map("completed_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  
+  lead        Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [performedBy], references: [id])
+  
+  @@map("activities")
+}
+
+model User {
+  id        String @id @default(cuid())
+  email     String @unique
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
+  role      UserRole @default(SALES_REP)
+  
+  // Relationships
+  leads     Lead[]
+  notes     Note[]
+  activities Activity[]
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("users")
+}
+
+// Enums
+enum LeadSource {
+  ORGANIC
+  PAID_SEARCH
+  SOCIAL_MEDIA
+  EMAIL_CAMPAIGN
+  REFERRAL
+  DIRECT
+  TRADE_SHOW
+  WEBINAR
+  CONTENT_DOWNLOAD
+  WEBSITE_FORM
+  PHONE_CALL
+  CHAT
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATING
+  CLOSED_WON
+  CLOSED_LOST
+  NURTURING
+  UNQUALIFIED
+}
+
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
+}
+
+enum InterestLevel {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum ActivityType {
+  EMAIL
+  PHONE_CALL
+  MEETING
+  DEMO
+  PROPOSAL
+  FOLLOW_UP
+  QUOTE_SENT
+  CONTRACT_SENT
+  TASK
+  NOTE
+}
+
+enum UserRole {
+  ADMIN
+  SALES_MANAGER
+  SALES_REP
+  MARKETING
+}
