@@ -3,7 +3,7 @@ import './Analytics.css';
 
 const Analytics = () => {
   const [dateRange, setDateRange] = useState('30days');
-  const [activeMetric, setActiveMetric] = useState('overview');
+  // const [activeMetric, setActiveMetric] = useState('overview');
 
   const metrics = {
     overview: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/animations.css';
 import './Hero.css';
@@ -66,7 +66,7 @@ const Hero = () => {
     }
   ];
 
-  const nextSlide = (e) => {
+  const nextSlide = useCallback((e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -76,7 +76,7 @@ const Hero = () => {
     setIsTransitioning(true);
     setCurrentSlide((prev) => (prev + 1) % slides.length);
     setTimeout(() => setIsTransitioning(false), 600);
-  };
+  }, [isTransitioning, slides.length]);
 
   const prevSlide = (e) => {
     if (e) {
@@ -106,7 +106,7 @@ const Hero = () => {
   useEffect(() => {
     const interval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [nextSlide]);
 
   const currentSlideData = slides[currentSlide];
   

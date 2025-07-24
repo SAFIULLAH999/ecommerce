@@ -15,7 +15,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signin, isAuthenticated } = useAuth();
+  const { signin, isAuthenticated, signInWithGoogle, signInWithFacebook } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -59,22 +59,20 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    if (isLoading) return;
+
     setIsLoading(true);
+    setError('');
+
     try {
-      // Simulate Google OAuth flow
-      console.log('Initiating Google login...');
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await signInWithGoogle();
 
-      // Simulate successful login
-      const googleUser = {
-        email: 'user@gmail.com',
-        name: 'Google User',
-        provider: 'google'
-      };
-
-      console.log('Google login successful:', googleUser);
-      navigate('/dashboard');
+      if (response.success) {
+        console.log('Google login successful:', response.user);
+        navigate('/dashboard');
+      }
     } catch (error) {
+      setError(error.message || 'Google sign-in failed. Please try again.');
       console.error('Google login failed:', error);
     } finally {
       setIsLoading(false);
@@ -82,22 +80,20 @@ const Login = () => {
   };
 
   const handleFacebookLogin = async () => {
+    if (isLoading) return;
+
     setIsLoading(true);
+    setError('');
+
     try {
-      // Simulate Facebook OAuth flow
-      console.log('Initiating Facebook login...');
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await signInWithFacebook();
 
-      // Simulate successful login
-      const facebookUser = {
-        email: 'user@facebook.com',
-        name: 'Facebook User',
-        provider: 'facebook'
-      };
-
-      console.log('Facebook login successful:', facebookUser);
-      navigate('/dashboard');
+      if (response.success) {
+        console.log('Facebook login successful:', response.user);
+        navigate('/dashboard');
+      }
     } catch (error) {
+      setError(error.message || 'Facebook sign-in failed. Please try again.');
       console.error('Facebook login failed:', error);
     } finally {
       setIsLoading(false);

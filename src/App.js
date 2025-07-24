@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import animationManager from './utils/animationManager';
 import autoAnimations from './utils/autoAnimations';
 import { AppProvider } from './context/AppContext';

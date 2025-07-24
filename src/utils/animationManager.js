@@ -102,6 +102,9 @@ class AnimationManager {
       case 'rotateIn':
         element.style.transform = 'rotate(0deg) scale(1)';
         break;
+      default:
+        element.style.transform = 'translateY(0)';
+        break;
     }
 
     // Add animated class
@@ -135,6 +138,9 @@ class AnimationManager {
         break;
       case 'rotateIn':
         element.style.transform = 'rotate(-5deg) scale(0.9)';
+        break;
+      default:
+        element.style.transform = 'translateY(30px)';
         break;
     }
 

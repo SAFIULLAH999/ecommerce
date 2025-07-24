@@ -21,7 +21,7 @@ const Signup = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signup, isAuthenticated } = useAuth();
+  const { signup, isAuthenticated, signInWithGoogle, signInWithFacebook } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -90,12 +90,46 @@ const Signup = () => {
     }
   };
 
-  const handleGoogleSignup = () => {
-    console.log('Google signup clicked');
+  const handleGoogleSignup = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await signInWithGoogle();
+
+      if (response.success) {
+        console.log('Google signup successful:', response.user);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setError(error.message || 'Google sign-up failed. Please try again.');
+      console.error('Google signup failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFacebookSignup = () => {
-    console.log('Facebook signup clicked');
+  const handleFacebookSignup = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await signInWithFacebook();
+
+      if (response.success) {
+        console.log('Facebook signup successful:', response.user);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setError(error.message || 'Facebook sign-up failed. Please try again.');
+      console.error('Facebook signup failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getPasswordStrengthText = () => {

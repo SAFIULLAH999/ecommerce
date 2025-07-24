@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@prisma/client": "^6.12.0",
+
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -16,11 +16,20 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "@prisma/client": "^6.12.0"
+  },
+  "overrides": {
+    "typescript": "^4.9.5"
+  },
+  "resolutions": {
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:prod": "npm run build && npm run optimize-build",
+    "optimize-build": "npx terser build/static/js/*.js --compress --mangle --output build/static/js/",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "cd server && npm start",
@@ -29,7 +38,9 @@
     "dev": "concurrently \"npm run server:dev\" \"npm start\"",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio"
+    "prisma:studio": "npx prisma studio",
+    "deploy:vercel": "vercel --prod",
+    "preview": "npm run build && npx serve -s build"
   },
   "eslintConfig": {
     "extends": [

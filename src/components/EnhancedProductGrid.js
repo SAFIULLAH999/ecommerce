@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import animationManager from '../utils/animationManager';
 import './EnhancedProductGrid.css';
 
 const EnhancedProductGrid = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { addToCart, addToWishlist, isInWishlist } = useApp();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);

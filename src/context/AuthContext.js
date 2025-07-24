@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/auth';
+import firebaseOAuthService from '../services/firebase-oauth';
 
 const AuthContext = createContext();
 
@@ -106,6 +107,48 @@ export const AuthProvider = ({ children }) => {
     authService.setUser(userData);
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      const response = await firebaseOAuthService.signInWithGoogle();
+
+      if (response.success) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        authService.setToken(response.token);
+        authService.setUser(response.user);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Google signin failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithFacebook = async () => {
+    try {
+      setIsLoading(true);
+      const response = await firebaseOAuthService.signInWithFacebook();
+
+      if (response.success) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        authService.setToken(response.token);
+        authService.setUser(response.user);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Facebook signin failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Auto-logout on token expiry
   useEffect(() => {
     const checkTokenInterval = setInterval(() => {
@@ -125,7 +168,9 @@ export const AuthProvider = ({ children }) => {
     signin,
     logout,
     updateUser,
-    initializeAuth
+    initializeAuth,
+    signInWithGoogle,
+    signInWithFacebook
   };
 
   return (
