@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import animationManager from './utils/animationManager';
 import autoAnimations from './utils/autoAnimations';
 import { AppProvider } from './context/AppContext';
+import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
@@ -76,8 +77,9 @@ function App() {
   }, []);
 
   return (
-    <AppProvider>
-      <Router>
+    <AuthProvider>
+      <AppProvider>
+        <Router>
         <div className="app">
           <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
           <div className={`main-content scroll-container ${
@@ -113,8 +115,9 @@ function App() {
             <ScrollToTop />
           </div>
         </div>
-      </Router>
-    </AppProvider>
+        </Router>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 

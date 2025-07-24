@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/animations.css';
 import './Auth.css';
 
@@ -12,11 +13,18 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signin, isAuthenticated } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+
+    // Redirect if already authenticated
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -29,14 +37,25 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Login attempt:', formData);
+    setError('');
+
+    try {
+      const credentials = {
+        email: formData.email,
+        password: formData.password
+      };
+
+      const response = await signin(credentials);
+
+      if (response.success) {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setError(error.message || 'Login failed. Please try again.');
+      console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
-      // Navigate to dashboard on successful login
-      navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -106,6 +125,19 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            {error && (
+              <div className="error-message stagger-item" style={{
+                background: '#fee',
+                color: '#c33',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '1px solid #fcc'
+              }}>
+                {error}
+              </div>
+            )}
+
             <div className="input-group stagger-item">
               <label className="input-label">Email Address</label>
               <div className="input-wrapper">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/animations.css';
 import './Auth.css';
 
@@ -18,11 +19,18 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signup, isAuthenticated } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+
+    // Redirect if already authenticated
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     // Calculate password strength
@@ -46,26 +54,40 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setError('');
+
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match!');
       return;
     }
-    
+
     if (!formData.agreeToTerms) {
-      alert('Please agree to the terms and conditions');
+      setError('Please agree to the terms and conditions');
       return;
     }
-    
+
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Signup attempt:', formData);
+
+    try {
+      const userData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      };
+
+      const response = await signup(userData);
+
+      if (response.success) {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setError(error.message || 'Signup failed. Please try again.');
+      console.error('Signup error:', error);
+    } finally {
       setIsLoading(false);
-      // Navigate to dashboard on successful signup
-      navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   const handleGoogleSignup = () => {
@@ -130,6 +152,19 @@ const Signup = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form signup-form">
+            {error && (
+              <div className="error-message stagger-item" style={{
+                background: '#fee',
+                color: '#c33',
+                padding: '12px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '1px solid #fcc'
+              }}>
+                {error}
+              </div>
+            )}
+
             <div className="name-group">
               <div className="input-group stagger-item">
                 <label className="input-label">First Name</label>
