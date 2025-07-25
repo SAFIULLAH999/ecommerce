@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
 
 const Header = ({ onSidebarToggle }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { getCartItemsCount, toggleCartDrawer, toggleWishlistDrawer } = useApp();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   const toggleMobileMenu = (e) => {
     if (e) {
@@ -98,15 +100,33 @@ const Header = ({ onSidebarToggle }) => {
           </div>
 
           <div className="auth-buttons">
-            <Link to="/login" className="login-btn ultra-smooth hover-lift">
-              Sign In
-            </Link>
-            <Link to="/signup" className="signup-btn ultra-smooth hover-lift button-smooth">
-              <span>Sign Up</span>
-              <svg className="btn-arrow" viewBox="0 0 24 24">
-                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="user-info ultra-smooth">
+                  {user && user.firstName ? `Hi, ${user.firstName}` : 'Account'}
+                </span>
+                <button
+                  className="logout-btn ultra-smooth hover-lift button-smooth"
+                  onClick={logout}
+                  disabled={isLoading}
+                  style={{ marginLeft: 12 }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="login-btn ultra-smooth hover-lift">
+                  Sign In
+                </Link>
+                <Link to="/signup" className="signup-btn ultra-smooth hover-lift button-smooth">
+                  <span>Sign Up</span>
+                  <svg className="btn-arrow" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

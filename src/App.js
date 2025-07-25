@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import animationManager from './utils/animationManager';
 import autoAnimations from './utils/autoAnimations';
 import { AppProvider } from './context/AppContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
@@ -24,8 +24,19 @@ import Analytics from './pages/Analytics';
 import Commerce from './pages/Commerce';
 import Music from './pages/Music';
 import Videos from './pages/Videos';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
+import OrderCancel from './pages/OrderCancel';
 import './styles/animations.css';
 import './App.css';
+
+// ProtectedRoute component
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <div>Loading...</div>;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -90,12 +101,24 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/home" element={<Home />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                } />
                 <Route path="/products" element={<Products />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/blogs" element={<Blogs />} />
                 <Route path="/messages" element={<Messages />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/order-cancel" element={<OrderCancel />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/users" element={<Users />} />

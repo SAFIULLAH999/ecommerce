@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import './Products.css';
+import { useApp } from '../context/AppContext';
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const { addToCart } = useApp();
 
   const products = [
     { id: 1, name: 'Wireless Headphones', category: 'electronics', price: 199.99, image: '🎧', rating: 4.5, stock: 15 },
@@ -121,6 +123,9 @@ const Products = () => {
             <div className="product-card-actions">
               <button className="view-btn">View Details</button>
               <button className="edit-btn">Quick Edit</button>
+              <button className="add-cart-btn" onClick={() => addToCart(product)}>
+                Add to Cart
+              </button>
             </div>
           </div>
         ))}
