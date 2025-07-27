@@ -1,64 +1,194 @@
 import React, { useState } from 'react';
-import { useApp } from '../context/AppContext';
-import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { getStripePublishableKey } from '../utils/stripeConfig';
+import './Checkout.css';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
+// Validate Stripe publishable key
+const stripePublishableKey = getStripePublishableKey();
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 const Checkout = () => {
-  const { cart } = useApp();
-  const navigate = useNavigate();
+  const { cart, getCartTotal } = useCart();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [orderData, setOrderData] = useState({
+    email: user?.email || '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    phone: ''
+  });
 
-  const handleCheckout = async () => {
+  const handleInputChange = (e) => {
+    setOrderData({
+      ...orderData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleStripeCheckout = async () => {
     setLoading(true);
     setError('');
+
     try {
-      const response = await fetch('/api/checkout/create-checkout-session', {
+      // Check if Stripe is available
+      if (!stripePromise) {
+        throw new Error('Stripe is not configured. Please check your environment variables.');
+      }
+
+      const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cartItems: cart }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          items: cart,
+          customerInfo: orderData
+        })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to create checkout session');
+
+      const session = await response.json();
+
+      if (!response.ok) {
+        throw new Error(session.error || 'Failed to create checkout session');
+      }
+
       const stripe = await stripePromise;
-      await stripe.redirectToCheckout({ sessionId: data.id });
+      if (!stripe) {
+        throw new Error('Failed to load Stripe. Please refresh the page and try again.');
+      }
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
     } catch (err) {
-      setError(err.message || 'Checkout failed');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (cart.length === 0) {
-    return (
-      <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, textAlign: 'center' }}>
-        <h2>Your cart is empty</h2>
-        <button onClick={() => navigate('/products')}>Browse Products</button>
-      </div>
-    );
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleStripeCheckout();
+  };
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12 }}>
-      <h2>Checkout</h2>
-      <p>Review your order and proceed to payment.</p>
-      <ul style={{ marginBottom: 24 }}>
-        {cart.map(item => (
-          <li key={item.id} style={{ marginBottom: 8 }}>
-            {item.name} x {item.quantity} — ${item.price} each
-          </li>
-        ))}
-      </ul>
-      {error && <div style={{ color: '#c00', marginBottom: 16 }}>{error}</div>}
-      <button
-        onClick={handleCheckout}
-        disabled={loading}
-        style={{ background: '#667eea', color: '#fff', border: 'none', padding: '12px 32px', borderRadius: 6, fontWeight: 600, fontSize: 18, cursor: 'pointer' }}
-      >
-        {loading ? 'Redirecting...' : 'Pay with Card'}
-      </button>
+    <div className="checkout-page">
+      <div className="checkout-container">
+        <div className="checkout-form">
+          <h2>Checkout</h2>
+          {error && <div className="error-message">{error}</div>}
+          {!stripePublishableKey && (
+            <div className="warning-message">
+              ⚠️ Payment processing is not configured. Please contact support.
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit}>
+            <div className="form-section">
+              <h3>Contact Information</h3>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={orderData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-section">
+              <h3>Shipping Address</h3>
+              <div className="form-row">
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={orderData.firstName}
+                  onChange={handleInputChange}
+                  required
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={orderData.lastName}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <input
+                type="text"
+                name="address"
+                placeholder="Address"
+                value={orderData.address}
+                onChange={handleInputChange}
+                required
+              />
+              <div className="form-row">
+                <input
+                  type="text"
+                  name="city"
+                  placeholder="City"
+                  value={orderData.city}
+                  onChange={handleInputChange}
+                  required
+                />
+                <input
+                  type="text"
+                  name="zipCode"
+                  placeholder="ZIP Code"
+                  value={orderData.zipCode}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={orderData.phone}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="pay-button"
+              disabled={loading || cart.length === 0 || !stripePublishableKey}
+            >
+              {loading ? 'Processing...' :
+               !stripePublishableKey ? 'Payment Not Available' :
+               `Pay $${getCartTotal().toFixed(2)}`}
+            </button>
+          </form>
+        </div>
+
+        <div className="order-summary">
+          <h3>Order Summary</h3>
+          {cart.map(item => (
+            <div key={item.id} className="summary-item">
+              <span>{item.name} x {item.quantity}</span>
+              <span>${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className="summary-total">
+            <strong>Total: ${getCartTotal().toFixed(2)}</strong>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import animationManager from './utils/animationManager';
-import autoAnimations from './utils/autoAnimations';
 import { AppProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { AdminProvider } from './context/AdminContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
@@ -28,13 +28,13 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import OrderCancel from './pages/OrderCancel';
-import './styles/animations.css';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import './App.css';
 
 // ProtectedRoute component
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return <div>Loading...</div>;
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
@@ -43,105 +43,83 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const toggleSidebar = () => {
-    console.log('toggleSidebar called, current state:', sidebarExpanded);
     setSidebarExpanded(!sidebarExpanded);
   };
 
-  // Handle window resize for mobile detection
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       if (mobile) {
-        setSidebarExpanded(false); // Auto-collapse sidebar on mobile
+        setSidebarExpanded(false);
       }
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Check on mount
-
-    // Initialize theme
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
-    // Initialize animations
-    setTimeout(() => {
-      const appElement = document.querySelector('.app');
-      const contentWrapper = document.querySelector('.content-wrapper');
-
-      if (appElement) {
-        appElement.style.opacity = '1';
-        appElement.style.transform = 'translateY(0)';
-      }
-
-      if (contentWrapper) {
-        contentWrapper.style.opacity = '1';
-        contentWrapper.style.transform = 'translateY(0)';
-      }
-
-      // Ensure animations are initialized
-      animationManager.init();
-      autoAnimations.init();
-    }, 100);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <AuthProvider>
-      <AppProvider>
-        <Router>
-        <div className="app">
-          <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
-          <div className={`main-content scroll-container ${
-            isMobile ? '' : (sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
-          }`}>
-            <Header onSidebarToggle={toggleSidebar} />
-            <div className="content-wrapper">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } />
-                <Route path="/products" element={<Products />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/order-success" element={<OrderSuccess />} />
-                <Route path="/order-cancel" element={<OrderCancel />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/commerce" element={<Commerce />} />
-                <Route path="/music" element={<Music />} />
-                <Route path="/videos" element={<Videos />} />
-                <Route path="/design" element={<div className="page-placeholder">🎨 Design Studio Coming Soon</div>} />
-                <Route path="/marketplace" element={<div className="page-placeholder">🏪 Marketplace Coming Soon</div>} />
-                <Route path="/culinary" element={<div className="page-placeholder">🍰 Culinary Section Coming Soon</div>} />
-                <Route path="/pages" element={<div className="page-placeholder">📑 Pages Manager Coming Soon</div>} />
-              </Routes>
-              <Footer />
-            </div>
-            <CartDrawer />
-            <WishlistDrawer />
-            <ScrollToTop />
-          </div>
-        </div>
-        </Router>
-      </AppProvider>
+      <CartProvider>
+        <AdminProvider>
+          <AppProvider>
+            <Router>
+              <div className="app">
+                <Sidebar isExpanded={sidebarExpanded} onToggle={toggleSidebar} />
+                <div className={`main-content scroll-container ${
+                  isMobile ? '' : (sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed')
+                }`}>
+                  <Header onSidebarToggle={toggleSidebar} />
+                  <div className="content-wrapper">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/home" element={<Home />} />
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/admin" element={
+                        <ProtectedRoute>
+                          <AdminDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/settings" element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/categories" element={<Categories />} />
+                      <Route path="/blogs" element={<Blogs />} />
+                      <Route path="/messages" element={<Messages />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/order-success" element={<OrderSuccess />} />
+                      <Route path="/order-cancel" element={<OrderCancel />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/users" element={<Users />} />
+                      <Route path="/analytics" element={<Analytics />} />
+                      <Route path="/commerce" element={<Commerce />} />
+                      <Route path="/music" element={<Music />} />
+                      <Route path="/videos" element={<Videos />} />
+                    </Routes>
+                    <Footer />
+                  </div>
+                  <CartDrawer />
+                  <WishlistDrawer />
+                  <ScrollToTop />
+                </div>
+              </div>
+            </Router>
+          </AppProvider>
+        </AdminProvider>
+      </CartProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+

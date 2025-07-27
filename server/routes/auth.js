@@ -1,12 +1,35 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
-const prisma = new PrismaClient();
+
+// Temporary in-memory user store (replace with database later)
+const users = [
+  {
+    id: 1,
+    email: 'admin@example.com',
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'ADMIN',
+    isActive: true,
+    isEmailVerified: true
+  },
+  {
+    id: 2,
+    email: 'user@example.com',
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'CUSTOMER',
+    isActive: true,
+    isEmailVerified: true
+  }
+];
+let nextUserId = 3;
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -18,25 +41,9 @@ const authLimiter = rateLimit({
   }
 });
 
-// JWT secret from environment variable
+// JWT configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-
-// Helper function to generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-};
-
-// Helper function to hash password
-const hashPassword = async (password) => {
-  const saltRounds = 12;
-  return await bcrypt.hash(password, saltRounds);
-};
-
-// Helper function to compare password
-const comparePassword = async (password, hashedPassword) => {
-  return await bcrypt.compare(password, hashedPassword);
-};
 
 // Signup route
 router.post('/signup', [
@@ -66,9 +73,7 @@ router.post('/signup', [
     const { email, password, firstName, lastName } = req.body;
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUser = users.find(u => u.email === email);
 
     if (existingUser) {
       return res.status(409).json({
@@ -78,36 +83,38 @@ router.post('/signup', [
     }
 
     // Hash password
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        role: 'SALES_REP' // Default role
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isEmailVerified: true,
-        createdAt: true
-      }
-    });
+    const user = {
+      id: nextUserId++,
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      role: 'CUSTOMER',
+      isActive: true,
+      isEmailVerified: true,
+      createdAt: new Date()
+    };
+
+    users.push(user);
+
+    // Remove password from response
+    const { password: _, ...userResponse } = user;
 
     // Generate JWT token
-    const token = generateToken(user.id);
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
       data: {
-        user,
+        user: userResponse,
         token
       }
     });
@@ -141,9 +148,7 @@ router.post('/signin', [
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+    const user = users.find(u => u.email === email);
 
     if (!user) {
       return res.status(401).json({
@@ -161,7 +166,7 @@ router.post('/signin', [
     }
 
     // Compare password
-    const isPasswordValid = await comparePassword(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -171,13 +176,14 @@ router.post('/signin', [
     }
 
     // Update last login time
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() }
-    });
+    user.lastLoginAt = new Date();
 
     // Generate JWT token
-    const token = generateToken(user.id);
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
 
     // Return user data without password
     const { password: _, ...userWithoutPassword } = user;
@@ -215,24 +221,10 @@ router.get('/me', async (req, res) => {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isEmailVerified: true,
-        profileImage: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user from in-memory store
+    const user = users.find(u => u.id === decoded.userId);
 
     if (!user) {
       return res.status(404).json({
@@ -248,9 +240,12 @@ router.get('/me', async (req, res) => {
       });
     }
 
+    // Remove password from response
+    const { password: _, ...userResponse } = user;
+
     res.json({
       success: true,
-      data: { user }
+      data: { user: userResponse }
     });
 
   } catch (error) {

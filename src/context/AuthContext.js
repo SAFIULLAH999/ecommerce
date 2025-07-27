@@ -1,176 +1,193 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import authService from '../services/auth';
-import firebaseOAuthService from '../services/firebase-oauth';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
 };
 
+// API base URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('authToken'));
 
-  // Initialize auth state on app load
+  // Check for existing token on mount
   useEffect(() => {
-    initializeAuth();
-  }, []);
+    const checkAuthStatus = async () => {
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken) {
+        try {
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
 
-  const initializeAuth = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Check if token exists and is not expired
-      if (!authService.checkTokenExpiry()) {
-        setIsLoading(false);
-        return;
-      }
-
-      // If token exists, try to get current user
-      if (authService.isAuthenticated()) {
-        const response = await authService.getCurrentUser();
-        if (response.success) {
-          setUser(response.data.user);
-          setIsAuthenticated(true);
-        } else {
-          // If API call fails, clear auth
-          authService.clearAuth();
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.data.user);
+            setToken(storedToken);
+          } else {
+            // Token is invalid, remove it
+            localStorage.removeItem('authToken');
+            setToken(null);
+          }
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('authToken');
+          setToken(null);
         }
       }
+      setLoading(false);
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      setError('');
+      setLoading(true);
+
+      const response = await fetch(`${API_URL}/auth/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store token and user data
+      const { user: userData, token: authToken } = data.data;
+      localStorage.setItem('authToken', authToken);
+      setToken(authToken);
+      setUser(userData);
+
+      return userData;
     } catch (error) {
-      console.error('Auth initialization failed:', error);
-      authService.clearAuth();
+      setError(error.message);
+      throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const signup = async (userData) => {
+  const signup = async (email, password, firstName, lastName, confirmPassword) => {
     try {
-      setIsLoading(true);
-      const response = await authService.signup(userData);
-      
-      if (response.success) {
-        setUser(response.data.user);
-        setIsAuthenticated(true);
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('Signup failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setError('');
+      setLoading(true);
 
-  const signin = async (credentials) => {
-    try {
-      setIsLoading(true);
-      const response = await authService.signin(credentials);
-      
-      if (response.success) {
-        setUser(response.data.user);
-        setIsAuthenticated(true);
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          confirmPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
       }
-      
-      return response;
+
+      // Store token and user data
+      const { user: userData, token: authToken } = data.data;
+      localStorage.setItem('authToken', authToken);
+      setToken(authToken);
+      setUser(userData);
+
+      return userData;
     } catch (error) {
-      console.error('Signin failed:', error);
+      setError(error.message);
       throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      setIsLoading(true);
-      await authService.logout();
+      // Call logout endpoint (optional)
+      if (token) {
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Logout API call failed:', error);
     } finally {
+      // Always clear local state
+      localStorage.removeItem('authToken');
+      setToken(null);
       setUser(null);
-      setIsAuthenticated(false);
-      setIsLoading(false);
+      setError('');
     }
   };
 
-  const updateUser = (userData) => {
-    setUser(userData);
-    authService.setUser(userData);
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      const response = await firebaseOAuthService.signInWithGoogle();
-
-      if (response.success) {
-        setUser(response.user);
-        setIsAuthenticated(true);
-        authService.setToken(response.token);
-        authService.setUser(response.user);
+  // Helper function to make authenticated API calls
+  const apiCall = async (endpoint, options = {}) => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...options.headers
       }
+    });
 
-      return response;
-    } catch (error) {
-      console.error('Google signin failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+    if (response.status === 401) {
+      // Token expired or invalid
+      logout();
+      throw new Error('Session expired. Please login again.');
     }
+
+    return response;
   };
-
-  const signInWithFacebook = async () => {
-    try {
-      setIsLoading(true);
-      const response = await firebaseOAuthService.signInWithFacebook();
-
-      if (response.success) {
-        setUser(response.user);
-        setIsAuthenticated(true);
-        authService.setToken(response.token);
-        authService.setUser(response.user);
-      }
-
-      return response;
-    } catch (error) {
-      console.error('Facebook signin failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Auto-logout on token expiry
-  useEffect(() => {
-    const checkTokenInterval = setInterval(() => {
-      if (isAuthenticated && !authService.checkTokenExpiry()) {
-        logout();
-      }
-    }, 60000); // Check every minute
-
-    return () => clearInterval(checkTokenInterval);
-  }, [isAuthenticated]);
 
   const value = {
     user,
-    isLoading,
-    isAuthenticated,
+    login,
     signup,
-    signin,
     logout,
-    updateUser,
-    initializeAuth,
-    signInWithGoogle,
-    signInWithFacebook
+    loading,
+    error,
+    token,
+    isAuthenticated: !!user,
+    getAuthHeaders,
+    apiCall
   };
 
   return (
@@ -179,3 +196,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

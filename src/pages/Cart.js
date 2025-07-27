@@ -1,70 +1,95 @@
 import React from 'react';
-import { useApp } from '../context/AppContext';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import './Cart.css';
 
 const Cart = () => {
-  const {
-    cart,
-    updateCartQuantity,
-    removeFromCart,
-    clearCart,
-    getCartTotal
-  } = useApp();
-  const navigate = useNavigate();
+  const { 
+    cart, 
+    removeFromCart, 
+    updateQuantity, 
+    clearCart, 
+    getCartTotal 
+  } = useCart();
+
+  if (cart.length === 0) {
+    return (
+      <div className="cart-page">
+        <div className="empty-cart">
+          <h2>Your cart is empty</h2>
+          <p>Add some products to get started!</p>
+          <Link to="/products" className="continue-shopping">
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="cart-page" style={{ maxWidth: 800, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
-      <h2 style={{ marginBottom: 24 }}>Your Cart</h2>
-      {cart.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#888', padding: 40 }}>
-          <span style={{ fontSize: 48 }}>🛒</span>
-          <h3>Your cart is empty</h3>
-          <p>Add some products to get started!</p>
-        </div>
-      ) : (
-        <>
-          <table style={{ width: '100%', marginBottom: 24 }}>
-            <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.map(item => (
-                <tr key={item.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                  <td>{item.name}</td>
-                  <td>${item.price}</td>
-                  <td>
-                    <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>-</button>
-                    <span style={{ margin: '0 8px' }}>{item.quantity}</span>
-                    <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)}>+</button>
-                  </td>
-                  <td>${(item.price * item.quantity).toFixed(2)}</td>
-                  <td>
-                    <button onClick={() => removeFromCart(item.id)} style={{ color: '#c00' }}>Remove</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <button onClick={clearCart} style={{ background: '#eee', color: '#333', border: 'none', padding: '8px 16px', borderRadius: 6 }}>Clear Cart</button>
-            <div style={{ fontSize: 20 }}>
-              Total: <strong>${getCartTotal().toFixed(2)}</strong>
-              <button
-                style={{ marginLeft: 24, background: '#667eea', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}
-                onClick={() => navigate('/checkout')}
+    <div className="cart-page">
+      <div className="cart-header">
+        <h1>Shopping Cart ({cart.length} items)</h1>
+        <button onClick={clearCart} className="clear-cart">
+          Clear Cart
+        </button>
+      </div>
+
+      <div className="cart-content">
+        <div className="cart-items">
+          {cart.map(item => (
+            <div key={item.id} className="cart-item">
+              <img src={item.image} alt={item.name} />
+              <div className="item-details">
+                <h3>{item.name}</h3>
+                <p className="item-price">${item.price}</p>
+              </div>
+              <div className="quantity-controls">
+                <button 
+                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  disabled={item.quantity <= 1}
+                >
+                  -
+                </button>
+                <span>{item.quantity}</span>
+                <button 
+                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                >
+                  +
+                </button>
+              </div>
+              <div className="item-total">
+                ${(item.price * item.quantity).toFixed(2)}
+              </div>
+              <button 
+                onClick={() => removeFromCart(item.id)}
+                className="remove-item"
               >
-                Checkout
+                🗑️
               </button>
             </div>
+          ))}
+        </div>
+
+        <div className="cart-summary">
+          <h3>Order Summary</h3>
+          <div className="summary-line">
+            <span>Subtotal:</span>
+            <span>${getCartTotal().toFixed(2)}</span>
           </div>
-        </>
-      )}
+          <div className="summary-line">
+            <span>Shipping:</span>
+            <span>Free</span>
+          </div>
+          <div className="summary-line total">
+            <span>Total:</span>
+            <span>${getCartTotal().toFixed(2)}</span>
+          </div>
+          <Link to="/checkout" className="checkout-btn">
+            Proceed to Checkout
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

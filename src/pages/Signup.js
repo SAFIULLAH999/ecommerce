@@ -21,16 +21,23 @@ const Signup = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signup, isAuthenticated, signInWithGoogle, signInWithFacebook } = useAuth();
+  const { signup, isAuthenticated, error: authError } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
 
     // Redirect if already authenticated
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
+
+  // Update error when auth error changes
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
 
   useEffect(() => {
     // Calculate password strength
@@ -56,8 +63,14 @@ const Signup = () => {
     e.preventDefault();
     setError('');
 
+    // Validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match!');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
       return;
     }
 
@@ -69,19 +82,14 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const userData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword
-      };
-
-      const response = await signup(userData);
-
-      if (response.success) {
-        navigate('/dashboard');
-      }
+      await signup(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName,
+        formData.confirmPassword
+      );
+      // Redirect will happen automatically via useEffect when isAuthenticated changes
     } catch (error) {
       setError(error.message || 'Signup failed. Please try again.');
       console.error('Signup error:', error);
@@ -90,46 +98,13 @@ const Signup = () => {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await signInWithGoogle();
-
-      if (response.success) {
-        console.log('Google signup successful:', response.user);
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      setError(error.message || 'Google sign-up failed. Please try again.');
-      console.error('Google signup failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  // Social signup placeholder functions (can be implemented later)
+  const handleGoogleSignup = () => {
+    setError('Google signup will be available soon!');
   };
 
-  const handleFacebookSignup = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await signInWithFacebook();
-
-      if (response.success) {
-        console.log('Facebook signup successful:', response.user);
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      setError(error.message || 'Facebook sign-up failed. Please try again.');
-      console.error('Facebook signup failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleFacebookSignup = () => {
+    setError('Facebook signup will be available soon!');
   };
 
   const getPasswordStrengthText = () => {

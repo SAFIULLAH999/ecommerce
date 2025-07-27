@@ -1,42 +1,49 @@
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// Temporary in-memory user store (should match the one in auth.js)
+const users = [
+  {
+    id: 1,
+    email: 'admin@example.com',
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'ADMIN',
+    isActive: true,
+    isEmailVerified: true
+  },
+  {
+    id: 2,
+    email: 'user@example.com',
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'CUSTOMER',
+    isActive: true,
+    isEmailVerified: true
+  }
+];
 
-// Middleware to protect routes that require authentication
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Access denied. No token provided.'
+        message: 'Access token required'
       });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        isEmailVerified: true
-      }
-    });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user from in-memory store
+    const user = users.find(u => u.id === decoded.userId);
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: 'User not found'
       });
@@ -49,10 +56,10 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Add user to request object
-    req.user = user;
+    // Remove password from user object
+    const { password: _, ...userWithoutPassword } = user;
+    req.user = userWithoutPassword;
     next();
-
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
@@ -60,7 +67,7 @@ const authenticateToken = async (req, res, next) => {
         message: 'Invalid token'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
@@ -69,72 +76,52 @@ const authenticateToken = async (req, res, next) => {
     }
 
     console.error('Auth middleware error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
   }
 };
 
-// Middleware to check if user has required role
-const requireRole = (roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-    }
+const requireAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
 
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Insufficient permissions'
-      });
-    }
+  if (req.user.role !== 'ADMIN') {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin access required'
+    });
+  }
 
-    next();
-  };
+  next();
 };
 
-// Middleware for optional authentication (doesn't fail if no token)
-const optionalAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      req.user = null;
-      return next();
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        isEmailVerified: true
-      }
+const requireSalesRep = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
     });
-
-    req.user = user && user.isActive ? user : null;
-    next();
-
-  } catch (error) {
-    // If token is invalid, just set user to null and continue
-    req.user = null;
-    next();
   }
+
+  if (!['ADMIN', 'SALES_REP'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Sales representative access required'
+    });
+  }
+
+  next();
 };
 
 module.exports = {
   authenticateToken,
-  requireRole,
-  optionalAuth
+  requireAdmin,
+  requireSalesRep
 };
+

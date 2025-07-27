@@ -15,16 +15,23 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signin, isAuthenticated, signInWithGoogle, signInWithFacebook } = useAuth();
+  const { login, isAuthenticated, error: authError } = useAuth();
 
   useEffect(() => {
     setIsLoaded(true);
 
     // Redirect if already authenticated
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
+
+  // Update error when auth error changes
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,16 +47,8 @@ const Login = () => {
     setError('');
 
     try {
-      const credentials = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      const response = await signin(credentials);
-
-      if (response.success) {
-        navigate('/dashboard');
-      }
+      await login(formData.email, formData.password);
+      // Redirect will happen automatically via useEffect when isAuthenticated changes
     } catch (error) {
       setError(error.message || 'Login failed. Please try again.');
       console.error('Login error:', error);
@@ -58,46 +57,13 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await signInWithGoogle();
-
-      if (response.success) {
-        console.log('Google login successful:', response.user);
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      setError(error.message || 'Google sign-in failed. Please try again.');
-      console.error('Google login failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  // Social login placeholder functions (can be implemented later)
+  const handleGoogleLogin = () => {
+    setError('Google login will be available soon!');
   };
 
-  const handleFacebookLogin = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await signInWithFacebook();
-
-      if (response.success) {
-        console.log('Facebook login successful:', response.user);
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      setError(error.message || 'Facebook sign-in failed. Please try again.');
-      console.error('Facebook login failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleFacebookLogin = () => {
+    setError('Facebook login will be available soon!');
   };
 
   return (

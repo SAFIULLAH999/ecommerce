@@ -1,144 +1,138 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import './Header.css';
 
 const Header = ({ onSidebarToggle }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout, isAuthenticated, loading } = useAuth();
+  const { getCartItemsCount, toggleCart } = useCart();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const location = useLocation();
-  const { getCartItemsCount, toggleCartDrawer, toggleWishlistDrawer } = useApp();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
-  const toggleMobileMenu = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+  // Handle scroll effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserMenu && !event.target.closest('.user-menu')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showUserMenu]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+      setShowUserMenu(false);
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-    console.log('Mobile menu toggle clicked!');
-    setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const handleSearchClick = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     }
-    console.log('Search clicked!');
-    // Add search functionality here
-  };
-
-  const handleWishlistClick = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    console.log('Wishlist clicked!');
-    toggleWishlistDrawer();
-  };
-
-  const handleCartClick = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    console.log('Cart clicked!');
-    toggleCartDrawer();
   };
 
   return (
-    <header className="header">
+    <header className={`header sticky-header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
         <div className="header-left">
-          <div className="logo">
-            <span className="crown-icon">👑</span>
-            <span className="brand-name">Mantu</span>
-          </div>
+          <button className="sidebar-toggle" onClick={onSidebarToggle}>
+            ☰
+          </button>
+          <Link to="/" className="logo">
+            <span>🛍️ E-Commerce</span>
+          </Link>
         </div>
 
-        <nav className="main-nav">
-          <Link to="/home" className={`nav-link ${location.pathname === '/home' || location.pathname === '/' ? 'active' : ''}`}>Home</Link>
-          <Link to="/categories" className={`nav-link ${location.pathname === '/categories' ? 'active' : ''}`}>Categories</Link>
-          <Link to="/products" className={`nav-link ${location.pathname === '/products' ? 'active' : ''}`}>Products</Link>
-          <Link to="/blogs" className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`}>Pages</Link>
-        </nav>
-
-        <button
-          className="mobile-menu-toggle"
-          onClick={toggleMobileMenu}
-          type="button"
-          style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
-        >
-          {mobileMenuOpen ? '✕' : '☰'}
-        </button>
+        <div className="header-center">
+          <form className="search-bar" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit">🔍</button>
+          </form>
+        </div>
 
         <div className="header-right">
-          <div className="header-icons">
-            <div
-              className="search-icon"
-              title="Search"
-              onClick={handleSearchClick}
-              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
-            >🔍</div>
-            <div
-              className="wishlist-icon"
-              title="Wishlist"
-              onClick={handleWishlistClick}
-              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
-            >🤍</div>
-            <div
-              className="cart-icon"
-              title="Shopping Cart"
-              onClick={handleCartClick}
-              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
-            >
-              🛒
-              {getCartItemsCount() > 0 && (
-                <span className="cart-count">{getCartItemsCount()}</span>
+          <button className="cart-btn" onClick={toggleCart}>
+            🛒 <span className="cart-count">{getCartItemsCount()}</span>
+          </button>
+
+          {loading ? (
+            <div className="auth-loading">
+              <div className="loading-spinner"></div>
+            </div>
+          ) : isAuthenticated ? (
+            <div className="user-menu">
+              <button
+                className="user-btn"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+              >
+                👤 {user?.displayName || user?.email || 'User'}
+              </button>
+              {showUserMenu && (
+                <div className="user-dropdown">
+                  <Link to="/profile" onClick={() => setShowUserMenu(false)}>
+                    👤 Profile
+                  </Link>
+                  <Link to="/orders" onClick={() => setShowUserMenu(false)}>
+                    📦 Orders
+                  </Link>
+                  {user?.isAdmin && (
+                    <Link to="/admin" onClick={() => setShowUserMenu(false)}>
+                      ⚙️ Admin
+                    </Link>
+                  )}
+                  <button onClick={handleLogout} className="logout-btn">
+                    🚪 Logout
+                  </button>
+                </div>
               )}
             </div>
-          </div>
-
-          <div className="auth-buttons">
-            {isAuthenticated ? (
-              <>
-                <span className="user-info ultra-smooth">
-                  {user && user.firstName ? `Hi, ${user.firstName}` : 'Account'}
-                </span>
-                <button
-                  className="logout-btn ultra-smooth hover-lift button-smooth"
-                  onClick={logout}
-                  disabled={isLoading}
-                  style={{ marginLeft: 12 }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="login-btn ultra-smooth hover-lift">
-                  Sign In
-                </Link>
-                <Link to="/signup" className="signup-btn ultra-smooth hover-lift button-smooth">
-                  <span>Sign Up</span>
-                  <svg className="btn-arrow" viewBox="0 0 24 24">
-                    <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-              </>
-            )}
-          </div>
+          ) : (
+            <div className="auth-buttons">
+              <Link
+                to="/login"
+                className={`login-btn ${location.pathname === '/login' ? 'active' : ''}`}
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className={`signup-btn ${location.pathname === '/signup' ? 'active' : ''}`}
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
-
-      <nav className={`mobile-nav ${mobileMenuOpen ? 'open' : ''}`}>
-        <Link to="/home" className={`nav-link ${location.pathname === '/home' || location.pathname === '/' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>Home</Link>
-        <Link to="/categories" className={`nav-link ${location.pathname === '/categories' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>Categories</Link>
-        <Link to="/products" className={`nav-link ${location.pathname === '/products' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>Products</Link>
-        <Link to="/blogs" className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>Pages</Link>
-      </nav>
     </header>
   );
 };
 
 export default Header;
+
