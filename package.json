@@ -1,56 +1,47 @@
 {
-  "name": "ecommerce",
+  "name": "smarttech-ecommerce",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@plasmicapp/react-web": "^0.2.394",
     "@stripe/stripe-js": "^7.6.1",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "bcryptjs": "^3.0.2",
-    "body-parser": "^2.2.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
+    "axios": "^1.6.0",
     "firebase": "^12.0.0",
     "firebase-admin": "^13.4.0",
+    "framer-motion": "^10.16.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.7.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "lucide-react": "^0.294.0",
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@prisma/client": "^6.12.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
-    "prisma": "^6.12.0"
-  },
-  "overrides": {
-    "typescript": "^4.9.5"
-  },
-  "resolutions": {
-    "typescript": "^4.9.5"
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "postcss": "^8.5.6",
+    "prisma": "^6.12.0",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:prod": "npm run build && npm run optimize-build",
-    "optimize-build": "npx terser build/static/js/*.js --compress --mangle --output build/static/js/",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "server": "cd server && npm start",
     "server:dev": "cd server && npm run dev",
     "server:install": "cd server && npm install",
-    "dev": "concurrently \"npm run server:dev\" \"npm start\"",
+    "dev:full": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
     "deploy:vercel": "vercel --prod",
-    "preview": "npm run build && npx serve -s build"
+    "export": "next export"
   },
   "eslintConfig": {
     "extends": [
