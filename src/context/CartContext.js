@@ -12,6 +12,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Load cart from localStorage on mount
@@ -22,10 +23,23 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
+  // Load wishlist from localStorage on mount
+  useEffect(() => {
+    const savedWishlist = localStorage.getItem('wishlist');
+    if (savedWishlist) {
+      setWishlist(JSON.parse(savedWishlist));
+    }
+  }, []);
+
   // Save cart to localStorage whenever cart changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  // Save wishlist to localStorage whenever wishlist changes
+  useEffect(() => {
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
 
   const addToCart = (product, quantity = 1) => {
     setCart(prevCart => {
@@ -73,8 +87,34 @@ export const CartProvider = ({ children }) => {
     setIsCartOpen(!isCartOpen);
   };
 
+  // Wishlist functions
+  const addToWishlist = (product) => {
+    setWishlist(prevWishlist => {
+      const existingItem = prevWishlist.find(item => item.id === product.id);
+      if (existingItem) {
+        // Remove from wishlist if already exists
+        return prevWishlist.filter(item => item.id !== product.id);
+      }
+      // Add to wishlist
+      return [...prevWishlist, product];
+    });
+  };
+
+  const removeFromWishlist = (productId) => {
+    setWishlist(prevWishlist => prevWishlist.filter(item => item.id !== productId));
+  };
+
+  const clearWishlist = () => {
+    setWishlist([]);
+  };
+
+  const isInWishlist = (productId) => {
+    return wishlist.some(item => item.id === productId);
+  };
+
   const value = {
     cart,
+    wishlist,
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -82,7 +122,11 @@ export const CartProvider = ({ children }) => {
     getCartTotal,
     getCartItemsCount,
     isCartOpen,
-    toggleCart
+    toggleCart,
+    addToWishlist,
+    removeFromWishlist,
+    clearWishlist,
+    isInWishlist
   };
 
   return (

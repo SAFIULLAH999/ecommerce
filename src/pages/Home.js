@@ -1,28 +1,25 @@
-import React, { useEffect } from 'react';
-import Hero from '../components/Hero';
-import Categories from '../components/Categories';
-import EnhancedProductGrid from '../components/EnhancedProductGrid';
-import Blog from '../components/Blog';
-import animationManager from '../utils/animationManager';
+import React from 'react';
+import MantuDemo from './MantuDemo';
+import './Home.css';
 
+/**
+ * Home Page Component
+ *
+ * This is the main landing page that showcases the Mantu ecommerce template.
+ * It uses the enhanced MantuDemo component with all the modern features:
+ * - Hero slider with auto-play
+ * - Product catalog with filtering and sorting
+ * - Shopping cart functionality
+ * - Wishlist features
+ * - Search with suggestions
+ * - Responsive design
+ * - Smooth animations
+ * - Modern UI/UX
+ */
 const Home = () => {
-  useEffect(() => {
-    // Initialize animations for page sections
-    setTimeout(() => {
-      const sections = document.querySelectorAll('.home-page > *');
-      sections.forEach((section, index) => {
-        animationManager.addScrollAnimation(section, 'fadeInUp');
-        section.style.animationDelay = `${index * 0.2}s`;
-      });
-    }, 100);
-  }, []);
-
   return (
-    <div className="home-page">
-      <Hero />
-      <Categories />
-      <EnhancedProductGrid />
-      <Blog />
+    <div className="home-container">
+      <MantuDemo />
     </div>
   );
 };

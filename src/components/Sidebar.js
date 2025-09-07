@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = ({ isExpanded, onToggle }) => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const { isAuthenticated, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -43,24 +45,35 @@ const Sidebar = ({ isExpanded, onToggle }) => {
   };
   const location = useLocation();
 
-  const menuItems = [
-    { icon: '📊', label: 'Dashboard', path: '/dashboard', category: 'admin' },
-    { icon: '🏠', label: 'Home', path: '/home', category: 'main' },
-    { icon: '📦', label: 'Products', path: '/products', category: 'main' },
-    { icon: '📋', label: 'Categories', path: '/categories', category: 'main' },
-    { icon: '📝', label: 'Blogs', path: '/blogs', category: 'content' },
-    { icon: '📧', label: 'Messages', path: '/messages', category: 'communication' },
-    { icon: '⚙️', label: 'Settings', path: '/settings', category: 'admin' },
-    { icon: '🛒', label: 'Commerce', path: '/commerce', category: 'business' },
-    { icon: '👤', label: 'Users', path: '/users', category: 'admin' },
-    { icon: '📈', label: 'Analytics', path: '/analytics', category: 'business' },
-    { icon: '🎵', label: 'Music', path: '/music', category: 'media' },
-    { icon: '📺', label: 'Videos', path: '/videos', category: 'media' },
-    { icon: '🎨', label: 'Design', path: '/design', category: 'creative' },
-    { icon: '🏪', label: 'Marketplace', path: '/marketplace', category: 'business' },
-    { icon: '🍰', label: 'Culinary', path: '/culinary', category: 'lifestyle' },
-    { icon: '📑', label: 'Pages', path: '/pages', category: 'content' }
+  // Define all menu items with role requirements
+  const allMenuItems = [
+    { icon: '🏠', label: 'Home', path: '/home', roles: ['public', 'user', 'admin'] },
+    { icon: '📦', label: 'Products', path: '/products', roles: ['public', 'user', 'admin'] },
+    { icon: '📋', label: 'Categories', path: '/categories', roles: ['public', 'user', 'admin'] },
+    { icon: '📝', label: 'Blogs', path: '/blogs', roles: ['public', 'user', 'admin'] },
+    { icon: '🎵', label: 'Music', path: '/music', roles: ['public', 'user', 'admin'] },
+    { icon: '📺', label: 'Videos', path: '/videos', roles: ['public', 'user', 'admin'] },
+    { icon: '🛒', label: 'Cart', path: '/cart', roles: ['user', 'admin'] },
+    { icon: '⚙️', label: 'Settings', path: '/settings', roles: ['user', 'admin'] },
+    { icon: '📊', label: 'Dashboard', path: '/dashboard', roles: ['admin'] },
+    { icon: '👤', label: 'Users', path: '/users', roles: ['admin'] },
+    { icon: '📈', label: 'Analytics', path: '/analytics', roles: ['admin'] },
+    { icon: '🛒', label: 'Commerce', path: '/commerce', roles: ['admin'] },
+    { icon: '📧', label: 'Messages', path: '/messages', roles: ['admin'] },
   ];
+
+  // Filter menu items based on user role
+  const getFilteredMenuItems = () => {
+    if (!isAuthenticated) {
+      return allMenuItems.filter(item => item.roles.includes('public'));
+    } else if (isAdmin) {
+      return allMenuItems.filter(item => item.roles.includes('admin'));
+    } else {
+      return allMenuItems.filter(item => item.roles.includes('user'));
+    }
+  };
+
+  const menuItems = getFilteredMenuItems();
 
   return (
     <>

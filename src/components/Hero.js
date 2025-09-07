@@ -1,14 +1,55 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/animations.css';
 import './Hero.css';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
   const heroRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  // Slides data - moved before useEffect to avoid initialization error
+  const slides = [
+    {
+      id: 1,
+      title: "Premium Fashion Collection",
+      subtitle: "Discover the Latest Trends",
+      description: "Explore our curated selection of premium fashion items that define your unique style and personality.",
+      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      category: "fashion",
+      badge: "New Collection",
+      price: "Starting from $99",
+      features: ["Premium Quality", "Free Shipping", "30-Day Returns"],
+      bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+    },
+    {
+      id: 2,
+      title: "Luxury Accessories",
+      subtitle: "Elevate Your Style",
+      description: "Complete your look with our exclusive range of luxury accessories designed for the modern lifestyle.",
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      category: "accessories",
+      badge: "Limited Edition",
+      price: "From $149",
+      features: ["Handcrafted", "Premium Materials", "Lifetime Warranty"],
+      bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+    },
+    {
+      id: 3,
+      title: "Smart Technology",
+      subtitle: "Innovation Meets Style",
+      description: "Experience the perfect blend of cutting-edge technology and elegant design in our smart collection.",
+      image: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      category: "technology",
+      badge: "Best Seller",
+      price: "From $299",
+      features: ["Latest Tech", "Wireless", "Fast Charging"],
+      bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+    }
+  ];
 
   const handleShopNow = (e) => {
     if (e) {
@@ -26,45 +67,49 @@ const Hero = () => {
 
   useEffect(() => {
     setIsLoaded(true);
+
+    // Auto-slide functionality
+    const startAutoSlide = () => {
+      intervalRef.current = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+      }, 5000); // Change slide every 5 seconds
+    };
+
+    startAutoSlide();
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [slides.length]);
+
+  // Mouse tracking for parallax effects
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      setMousePosition({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const slides = [
-    {
-      id: 1,
-      title: "Fashion sale for Men's",
-      subtitle: "New Collection Fashion that suits your style.",
-      image: "https://cdn.builder.io/api/v1/image/assets%2F9f0b52c0859649e0acc31a2a0ba5605d%2Fec157bc7941940898d314b09a8ec793f?format=webp&width=800",
-      category: "men"
-    },
-    {
-      id: 2,
-      title: "Exclusive Premium Collection",
-      subtitle: "Discover luxury fashion that defines your unique style.",
-      image: "https://cdn.builder.io/api/v1/image/assets%2F9f0b52c0859649e0acc31a2a0ba5605d%2F32cb81698bdf4be1ade05536b5a9f73d?format=webp&width=800",
-      category: "premium"
-    },
-    {
-      id: 3,
-      title: "Cosmetics sale for Women's",
-      subtitle: "Elevate your beauty style that speaks confidence.",
-      image: "https://cdn.builder.io/api/v1/image/assets%2F9f0b52c0859649e0acc31a2a0ba5605d%2Fc36b83dc8c4649a19eb6934b14ec8032?format=webp&width=800",
-      category: "cosmetics"
-    },
-    {
-      id: 4,
-      title: "Fashion sale for Children's",
-      subtitle: "Fun and comfortable style for your little ones.",
-      image: "https://cdn.builder.io/api/v1/image/assets%2F9f0b52c0859649e0acc31a2a0ba5605d%2Fb82b8992e74d4d72b1a0ef478b569ba0?format=webp&width=800",
-      category: "children"
-    },
-    {
-      id: 5,
-      title: "Fashion sale for women's",
-      subtitle: "Elevate your every day style that speaks volumes.",
-      image: "https://cdn.builder.io/api/v1/image/assets%2F9f0b52c0859649e0acc31a2a0ba5605d%2Fc2b4f4277e2d4a35acee16ed6d7d58ad?format=webp&width=800",
-      category: "women"
+  // Pause auto-slide on hover
+  const handleMouseEnter = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
-  ];
+  };
+
+  const handleMouseLeave = () => {
+    intervalRef.current = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+  };
+
+
 
   const nextSlide = useCallback((e) => {
     if (e) {
@@ -109,89 +154,174 @@ const Hero = () => {
   }, [nextSlide]);
 
   const currentSlideData = slides[currentSlide];
-  
+
   return (
-    <section 
+    <section
       ref={heroRef}
-      className={`hero ultra-smooth ${isLoaded ? 'loaded' : ''}`}
+      className={`hero premium-hero ${isLoaded ? 'loaded' : ''}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        background: currentSlideData.bgColor,
+        transition: 'background 1s ease-in-out'
+      }}
     >
-      <div className="hero-background-overlay"></div>
-      <div className="hero-particles"></div>
-      
+      {/* Animated Background Elements */}
+      <div className="hero-bg-elements">
+        <div
+          className="parallax-element element-1"
+          style={{
+            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`
+          }}
+        ></div>
+        <div
+          className="parallax-element element-2"
+          style={{
+            transform: `translate(${mousePosition.x * -0.01}px, ${mousePosition.y * -0.01}px)`
+          }}
+        ></div>
+        <div
+          className="parallax-element element-3"
+          style={{
+            transform: `translate(${mousePosition.x * 0.015}px, ${mousePosition.y * 0.015}px)`
+          }}
+        ></div>
+      </div>
+
+      {/* Main Hero Content */}
       <div className="hero-container">
         <div className="hero-content">
-          <div className={`hero-text ${isLoaded ? 'slide-in-left' : ''}`}>
-            <div className="sale-badge pulse-animation">
-              <span className="sale-text">Sale!</span>
-              <div className="badge-glow"></div>
+          {/* Left Content */}
+          <div className="hero-text animate-on-scroll fade-in-left">
+            {/* Badge */}
+            <div className="hero-badge animate-bounce-in stagger-1">
+              <span className="badge-icon">✨</span>
+              <span className="badge-text">{currentSlideData.badge}</span>
             </div>
-            
-            <h1 className="hero-title gradient-text typewriter-effect">
+
+            {/* Main Title */}
+            <h1 className="hero-title text-reveal">
               <span className="title-line-1">
                 {currentSlideData.title.split(' ').slice(0, 2).join(' ')}
               </span>
               <br />
-              <span className="title-line-2">
+              <span className="title-line-2 gradient-text">
                 {currentSlideData.title.split(' ').slice(2).join(' ')}
               </span>
             </h1>
-            
-            <p className={`hero-subtitle fade-in-text ${isLoaded ? 'slide-in-bottom' : ''}`}>
+
+            {/* Subtitle */}
+            <h2 className="hero-subtitle animate-fade-in-up stagger-2">
               {currentSlideData.subtitle}
+            </h2>
+
+            {/* Description */}
+            <p className="hero-description animate-fade-in-up stagger-3">
+              {currentSlideData.description}
             </p>
-            
-            <button
-              className="shop-now-btn"
-              onClick={handleShopNow}
-              type="button"
-              style={{
-                position: 'relative',
-                zIndex: 1000,
-                pointerEvents: 'auto',
-                cursor: 'pointer'
-              }}
-            >
-              <span className="btn-text">Shop Now</span>
-              <div className="btn-glow"></div>
-              <svg className="btn-arrow" viewBox="0 0 24 24">
-                <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+
+            {/* Features */}
+            <div className="hero-features animate-fade-in-up stagger-4">
+              {currentSlideData.features.map((feature, index) => (
+                <div key={index} className="feature-item">
+                  <svg className="feature-icon" viewBox="0 0 24 24" width="16" height="16">
+                    <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Price */}
+            <div className="hero-price animate-fade-in-up stagger-5">
+              <span className="price-label">Price:</span>
+              <span className="price-value">{currentSlideData.price}</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="hero-actions animate-fade-in-up stagger-6">
+              <button
+                className="shop-now-btn magnetic-btn animate-pulse"
+                onClick={handleShopNow}
+                type="button"
+              >
+                <span className="btn-text">Shop Now</span>
+                <div className="btn-glow"></div>
+                <svg className="btn-arrow" viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              <button className="btn btn-outline btn-lg magnetic-btn">
+                <span>View Collection</span>
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="none" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <div className={`hero-image ${isLoaded ? 'slide-in-right' : ''}`}>
+          {/* Right Content - Image Slider */}
+          <div className="hero-image animate-on-scroll fade-in-right">
             <div className="hero-image-container">
-              <div className="decorative-circle float-animation"></div>
-              <div className="image-frame">
-                <div className="image-overlay"></div>
-                <img
-                  src={currentSlideData.image}
-                  alt={currentSlideData.title}
-                  className={`model-image ultra-smooth ${isTransitioning ? 'transitioning' : ''}`}
-                  key={currentSlide}
-                />
-                <div className="image-glow"></div>
+              {/* Image Slides */}
+              <div className="image-slider">
+                {slides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`slide-image ${index === currentSlide ? 'active' : ''}`}
+                    style={{
+                      transform: `translateX(${(index - currentSlide) * 100}%)`,
+                      transition: 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }}
+                  >
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="hero-main-image"
+                    />
+                    <div className="image-overlay"></div>
+                  </div>
+                ))}
               </div>
-              <div className="decorative-dots bounce"></div>
-              <div className="decorative-lines gradient-animation"></div>
-              <div className="floating-elements">
-                <div className="floating-element element-1"></div>
-                <div className="floating-element element-2"></div>
-                <div className="floating-element element-3"></div>
+
+              {/* Floating Elements */}
+              <div className="floating-ui-elements">
+                <div className="ui-element ui-element-1 animate-float">
+                  <div className="ui-content">
+                    <span className="ui-label">New</span>
+                    <span className="ui-value">+{slides.length}</span>
+                  </div>
+                </div>
+                <div className="ui-element ui-element-2 animate-float-reverse">
+                  <div className="ui-content">
+                    <span className="ui-label">Rating</span>
+                    <div className="rating-stars">
+                      ⭐⭐⭐⭐⭐
+                    </div>
+                  </div>
+                </div>
+                <div className="ui-element ui-element-3 animate-float">
+                  <div className="ui-content">
+                    <span className="ui-label">Customers</span>
+                    <span className="ui-value">10K+</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Navigation Controls */}
         <div className="hero-navigation">
           <button
             className={`nav-arrow nav-prev ${isTransitioning ? 'disabled' : ''}`}
             onClick={prevSlide}
             disabled={isTransitioning}
             type="button"
-            style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
           >
-            <svg viewBox="0 0 24 24">
+            <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
@@ -200,32 +330,30 @@ const Hero = () => {
             onClick={nextSlide}
             disabled={isTransitioning}
             type="button"
-            style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
           >
-            <svg viewBox="0 0 24 24">
+            <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         </div>
 
+        {/* Slide Indicators */}
         <div className="hero-indicators">
           {slides.map((_, index) => (
             <button
               key={index}
-              className={`indicator ${
-                index === currentSlide ? 'active' : ''
-              } ${isTransitioning ? 'disabled' : ''}`}
+              className={`indicator ${index === currentSlide ? 'active' : ''} ${isTransitioning ? 'disabled' : ''}`}
               onClick={goToSlide(index)}
               disabled={isTransitioning}
               type="button"
-              style={{ position: 'relative', zIndex: 1000, pointerEvents: 'auto', cursor: 'pointer' }}
               aria-label={`Go to slide ${index + 1}`}
             >
               <div className="indicator-fill"></div>
             </button>
           ))}
         </div>
-        
+
+        {/* Slide Counter */}
         <div className="slide-counter">
           <span className="current">{String(currentSlide + 1).padStart(2, '0')}</span>
           <span className="separator">/</span>

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './Products.css';
 import { useApp } from '../context/AppContext';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -8,16 +10,35 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('name');
   const { addToCart } = useApp();
 
-  const products = [
-    { id: 1, name: 'Wireless Headphones', category: 'electronics', price: 199.99, image: '🎧', rating: 4.5, stock: 15 },
-    { id: 2, name: 'Gaming Chair', category: 'furniture', price: 299.99, image: '🪑', rating: 4.8, stock: 8 },
-    { id: 3, name: 'Smart Watch', category: 'electronics', price: 249.99, image: '⌚', rating: 4.3, stock: 22 },
-    { id: 4, name: 'Coffee Maker', category: 'appliances', price: 129.99, image: '☕', rating: 4.6, stock: 12 },
-    { id: 5, name: 'Laptop Stand', category: 'accessories', price: 59.99, image: '💻', rating: 4.4, stock: 30 },
-    { id: 6, name: 'Desk Lamp', category: 'furniture', price: 79.99, image: '💡', rating: 4.2, stock: 18 },
-    { id: 7, name: 'Bluetooth Speaker', category: 'electronics', price: 89.99, image: '🔊', rating: 4.7, stock: 25 },
-    { id: 8, name: 'Plant Pot', category: 'home', price: 24.99, image: '🪴', rating: 4.1, stock: 45 }
-  ];
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/products`);
+        const json = await resp.json();
+        if (json?.success && Array.isArray(json.data)) {
+          setProducts(json.data.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category?.slug || p.category?.name || 'uncategorized',
+            price: Number(p.price ?? 0),
+            image: p.imageUrl || p.image || '🛍️',
+            rating: p.rating ?? 4.5,
+            stock: p.stock ?? 0
+          })));
+        } else if (Array.isArray(json)) {
+          setProducts(json);
+        } else {
+          setProducts([]);
+        }
+      } catch (e) {
+        console.error('Failed to load products', e);
+        setProducts([]);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const categories = [
     { value: 'all', label: 'All Categories' },

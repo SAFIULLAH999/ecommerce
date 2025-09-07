@@ -41,7 +41,7 @@ const Checkout = () => {
         throw new Error('Stripe is not configured. Please check your environment variables.');
       }
 
-      const response = await fetch('/api/checkout/create-session', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/checkout/create-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import animationManager from '../utils/animationManager';
 import './EnhancedProductGrid.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const EnhancedProductGrid = () => {
   // const navigate = useNavigate();
   const { addToCart, addToWishlist, isInWishlist } = useApp();
@@ -15,22 +17,40 @@ const EnhancedProductGrid = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
 
   useEffect(() => {
-    // Sample products with high-quality images
-    const sampleProducts = [
-      {
-        id: 1,
-        name: 'Cotton fabric T-shirt',
-        price: 120,
-        originalPrice: 150,
-        category: 'clothing',
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-        rating: 4.5,
-        reviews: 128,
-        brand: 'Fashion Co',
-        colors: ['#000', '#fff', '#999'],
-        sizes: ['S', 'M', 'L', 'XL'],
-        tag: 'Sale'
-      },
+    const fetchProducts = async () => {
+      try {
+        const resp = await fetch(`${API_BASE_URL}/products`);
+        const json = await resp.json();
+        const data = json?.success ? json.data : (Array.isArray(json) ? json : []);
+        const mapped = data.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price ?? 0),
+          originalPrice: Number(p.originalPrice ?? p.price ?? 0),
+          category: p.category || p.category?.slug || p.category?.name || 'misc',
+          image: p.imageUrl || p.image,
+          rating: p.rating ?? 4.5,
+          reviews: p.reviews ?? 0,
+          brand: p.brand || 'Brand',
+          colors: p.colors || ['#000', '#fff'],
+          sizes: p.sizes || ['S','M','L'],
+          tag: p.tag || null
+        }));
+        setProducts(mapped);
+        setFilteredProducts(mapped);
+        // Initialize animations
+        setTimeout(() => {
+          document.querySelectorAll('.enhanced-product-card').forEach((card, index) => {
+            animationManager.addScrollAnimation(card, 'fadeInUp');
+            card.style.animationDelay = `${index * 0.1}s`;
+          });
+        }, 100);
+      } catch (e) {
+        console.error('Failed to fetch products', e);
+      }
+    };
+    fetchProducts();
+  }, []);
       {
         id: 2,
         name: 'Leather handbag',

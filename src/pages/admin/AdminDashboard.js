@@ -21,9 +21,11 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/stats', {
+      const response = await fetch(`${API_BASE_URL}/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }

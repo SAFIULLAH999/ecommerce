@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import authService from '../services/auth';
 
 const AuthContext = createContext();
 
@@ -10,118 +11,66 @@ export const useAuth = () => {
   return context;
 };
 
-// API base URL
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [token, setToken] = useState(localStorage.getItem('authToken'));
 
-  // Check for existing token on mount
+  // On mount, hydrate from localStorage and verify with backend
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const storedToken = localStorage.getItem('authToken');
-      if (storedToken) {
-        try {
-          const response = await fetch(`${API_URL}/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data.data.user);
-            setToken(storedToken);
+    const bootstrap = async () => {
+      try {
+        const hasAuth = authService.isAuthenticated() && authService.checkTokenExpiry();
+        if (hasAuth) {
+          const resp = await authService.getCurrentUser();
+          if (resp?.success && resp.data?.user) {
+            setUser(resp.data.user);
           } else {
-            // Token is invalid, remove it
-            localStorage.removeItem('authToken');
-            setToken(null);
+            authService.clearAuth();
           }
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          localStorage.removeItem('authToken');
-          setToken(null);
         }
+      } catch (e) {
+        console.error('Auth bootstrap failed', e);
+        authService.clearAuth();
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
-    checkAuthStatus();
+    bootstrap();
   }, []);
 
   const login = async (email, password) => {
+    setLoading(true);
+    setError('');
     try {
-      setError('');
-      setLoading(true);
-
-      const response = await fetch(`${API_URL}/auth/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      const resp = await authService.signin({ email, password });
+      if (resp?.success && resp.data?.user) {
+        setUser(resp.data.user);
+        return resp.data.user;
       }
-
-      // Store token and user data
-      const { user: userData, token: authToken } = data.data;
-      localStorage.setItem('authToken', authToken);
-      setToken(authToken);
-      setUser(userData);
-
-      return userData;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+      throw new Error(resp?.message || 'Login failed');
+    } catch (e) {
+      setError(e.message);
+      throw e;
     } finally {
       setLoading(false);
     }
   };
 
   const signup = async (email, password, firstName, lastName, confirmPassword) => {
+    setLoading(true);
+    setError('');
     try {
-      setError('');
-      setLoading(true);
-
-      const response = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          firstName,
-          lastName,
-          confirmPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed');
+      if (password !== confirmPassword) throw new Error('Passwords do not match');
+      const resp = await authService.signup({ email, password, firstName, lastName });
+      if (resp?.success && resp.data?.user) {
+        setUser(resp.data.user);
+        return resp.data.user;
       }
-
-      // Store token and user data
-      const { user: userData, token: authToken } = data.data;
-      localStorage.setItem('authToken', authToken);
-      setToken(authToken);
-      setUser(userData);
-
-      return userData;
-    } catch (error) {
-      setError(error.message);
-      throw error;
+      throw new Error(resp?.message || 'Signup failed');
+    } catch (e) {
+      setError(e.message);
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -129,52 +78,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Call logout endpoint (optional)
-      if (token) {
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Logout API call failed:', error);
+      await authService.logout();
+    } catch (e) {
+      // ignore
     } finally {
-      // Always clear local state
-      localStorage.removeItem('authToken');
-      setToken(null);
       setUser(null);
-      setError('');
     }
-  };
-
-  // Helper function to get auth headers
-  const getAuthHeaders = () => {
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-  };
-
-  // Helper function to make authenticated API calls
-  const apiCall = async (endpoint, options = {}) => {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        ...getAuthHeaders(),
-        ...options.headers
-      }
-    });
-
-    if (response.status === 401) {
-      // Token expired or invalid
-      logout();
-      throw new Error('Session expired. Please login again.');
-    }
-
-    return response;
   };
 
   const value = {
@@ -184,10 +93,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     loading,
     error,
-    token,
     isAuthenticated: !!user,
-    getAuthHeaders,
-    apiCall
+    isAdmin: user?.role === 'admin' || user?.role === 'ADMIN'
   };
 
   return (
@@ -196,4 +103,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

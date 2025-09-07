@@ -40,12 +40,14 @@ const ProductForm = ({ product, onClose, onSuccess }) => {
     }
   };
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
   const uploadImage = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
 
     try {
-      const response = await fetch('/api/admin/upload-image', {
+      const response = await fetch(`${API_BASE_URL}/admin/upload-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`

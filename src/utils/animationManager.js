@@ -5,7 +5,7 @@ class AnimationManager {
     this.observers = new Map();
     this.animatedElements = new Set();
     this.isInitialized = false;
-    this.init();
+    // Don't auto-initialize - let components call init() when ready
   }
 
   init() {
@@ -474,10 +474,23 @@ const rippleCSS = `
   }
 `;
 
-const styleSheet = document.createElement('style');
-styleSheet.textContent = rippleCSS;
-document.head.appendChild(styleSheet);
+// Safe DOM manipulation - only execute when DOM is ready
+const addRippleStyles = () => {
+  if (typeof document !== 'undefined' && document.head) {
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = rippleCSS;
+    document.head.appendChild(styleSheet);
+  }
+};
 
-// Export singleton instance
-const animationManager = new AnimationManager();
-export default animationManager;
+// Export class instead of instance to avoid immediate DOM access
+export default AnimationManager;
+
+// Add styles when DOM is ready
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addRippleStyles);
+  } else {
+    addRippleStyles();
+  }
+}

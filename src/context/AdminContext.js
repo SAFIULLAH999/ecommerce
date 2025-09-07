@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const AdminContext = createContext();
 
 export const useAdmin = () => {
@@ -18,12 +20,10 @@ export const AdminProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Check if user is admin (you can customize this logic)
+  // Determine admin based on backend role
   useEffect(() => {
-    if (user) {
-      // Check admin status - you can modify this logic
-      const adminEmails = ['admin@example.com', 'owner@ecommerce.com'];
-      setIsAdmin(adminEmails.includes(user.email));
+    if (user?.role) {
+      setIsAdmin(user.role === 'ADMIN' || user.role === 'admin');
     } else {
       setIsAdmin(false);
     }
@@ -32,7 +32,7 @@ export const AdminProvider = ({ children }) => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/products', {
+      const response = await fetch(`${API_BASE_URL}/admin/products`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -48,7 +48,7 @@ export const AdminProvider = ({ children }) => {
 
   const addProduct = async (productData) => {
     try {
-      const response = await fetch('/api/admin/products', {
+      const response = await fetch(`${API_BASE_URL}/admin/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ export const AdminProvider = ({ children }) => {
 
   const updateProduct = async (id, productData) => {
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteProduct = async (id) => {
     try {
-      await fetch(`/api/admin/products/${id}`, {
+      await fetch(`${API_BASE_URL}/admin/products/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
