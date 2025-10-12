@@ -78,6 +78,9 @@ export const reducer = (state: Toast[], action: any): Toast[] => {
         return []
       }
       return state.filter((t) => t.id !== action.toastId)
+
+    default:
+      return state
   }
 }
 
