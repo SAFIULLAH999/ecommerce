@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { useState } from 'react'
 import { ShoppingBag, Heart, User, Search, Star, ShoppingCart, Filter, Grid, List, SlidersHorizontal, Eye, Zap, LogOut, ArrowLeft, Truck, Shield, CreditCard, MapPin, Phone, Mail } from 'lucide-react'

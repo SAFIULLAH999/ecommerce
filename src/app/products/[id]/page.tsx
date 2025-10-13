@@ -1,3 +1,5 @@
+'use client'
+
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, Heart, User, Search, Star, ShoppingCart, Filter, Grid, List, SlidersHorizontal, Eye, Zap, Minus, Plus, Truck, Shield, RotateCcw, Award } from 'lucide-react'
