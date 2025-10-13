@@ -5,15 +5,19 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Next.js 15 with App Router doesn't need SPA fallback
-# The static pages are generated in .next and served directly
+# Next.js 15 with App Router - Handle client-side routing
+# Catch all routes and serve index.html to let Next.js handle routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-# Only redirect 404s to index for client-side routing if needed
+# Handle 404s properly for Next.js
 [[redirects]]
   from = "/404"
   to = "/404.html"
