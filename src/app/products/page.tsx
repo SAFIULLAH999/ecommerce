@@ -10,7 +10,7 @@ export const metadata = {
 }
 
 export default function ProductsPage() {
-  const { addItem, isInCart, getItemQuantity } = useCart()
+  const { addItem, isInCart, getItemQuantity, itemCount } = useCart()
   const { isAuthenticated, user, logout, toggleLoginModal, toggleRegisterModal, loginModal, registerModal } = useAuth()
 
   const products = [
@@ -125,6 +125,17 @@ export default function ProductsPage() {
             <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group">
               <Search className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
             </button>
+
+            {/* Cart Icon with Count */}
+            <Link href="/cart" className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group relative">
+              <ShoppingCart className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
+            </Link>
+
             <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group relative">
               <Heart className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-red-500 transition-colors" />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
