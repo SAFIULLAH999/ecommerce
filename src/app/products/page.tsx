@@ -1,6 +1,8 @@
 import Link from 'next/link'
-import { ShoppingBag, Heart, User, Search, Star, ShoppingCart, Filter, Grid, List, SlidersHorizontal, Eye, Zap } from 'lucide-react'
+import { ShoppingBag, Heart, User, Search, Star, ShoppingCart, Filter, Grid, List, SlidersHorizontal, Eye, Zap, LogOut } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { AuthModal } from '@/components/AuthModal'
 
 export const metadata = {
   title: 'Products - Mantu E-commerce',
@@ -9,6 +11,7 @@ export const metadata = {
 
 export default function ProductsPage() {
   const { addItem, isInCart, getItemQuantity } = useCart()
+  const { isAuthenticated, user, logout, toggleLoginModal, toggleRegisterModal, loginModal, registerModal } = useAuth()
 
   const products = [
     {
@@ -126,9 +129,28 @@ export default function ProductsPage() {
               <Heart className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-red-500 transition-colors" />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
             </button>
-            <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group">
-              <User className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
-            </button>
+
+            {isAuthenticated && user ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group"
+                >
+                  <LogOut className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-red-500 transition-colors" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={toggleLoginModal}
+                className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors group"
+              >
+                <User className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors" />
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -331,6 +353,18 @@ export default function ProductsPage() {
           </div>
         </div>
       </main>
+
+      {/* Auth Modals */}
+      <AuthModal
+        isOpen={loginModal}
+        onClose={() => {}}
+        type="login"
+      />
+      <AuthModal
+        isOpen={registerModal}
+        onClose={() => {}}
+        type="register"
+      />
     </div>
   )
 }
