@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: 'Discover luxury fashion that defines your unique style',
   keywords: ['ecommerce', 'fashion', 'shopping', 'mantu'],
   authors: [{ name: 'Mantu Team' }],
-  viewport: 'width=device-width, initial-scale=1',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
