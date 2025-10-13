@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ShoppingBag, Heart, User, Search, Star, ShoppingCart, Filter, Grid, List, SlidersHorizontal, Eye, Zap } from 'lucide-react'
+import { useCart } from '@/contexts/CartContext'
 
 export const metadata = {
   title: 'Products - Mantu E-commerce',
@@ -7,6 +8,8 @@ export const metadata = {
 }
 
 export default function ProductsPage() {
+  const { addItem, isInCart, getItemQuantity } = useCart()
+
   const products = [
     {
       id: '1',
@@ -280,9 +283,20 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Add to Cart Button */}
-                <button className="w-full bg-gradient-to-r from-primary to-primary/90 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2">
+                <button
+                  onClick={() => addItem({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    image: `/api/placeholder/400/400?text=${encodeURIComponent(product.name)}`,
+                    quantity: 1,
+                    stock: 10 // Mock stock value
+                  })}
+                  className="w-full bg-gradient-to-r from-primary to-primary/90 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
+                >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>Add to Cart</span>
+                  <span>{isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}</span>
                 </button>
               </div>
             </div>
